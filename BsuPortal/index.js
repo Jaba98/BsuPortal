@@ -135,10 +135,12 @@ const BsuPortal = () => {
       } else if (url.includes('drive.google.com')) {
         // გახსენით Google Drive ნაგულისხმევ ბრაუზერში ან Google Drive აპში.
         Linking.openURL(url);
-        return false;
+
+      return false;
       }
     }
-
+    
+   
     return true; // ჩვეულებრივი WebView ნავიგაციის დაშვება ბმულების სხვა ტიპებისთვის.
   };
   
@@ -164,11 +166,12 @@ const BsuPortal = () => {
             source={{ uri: newUrl || 'https://portal.bsu.edu.ge/' }}
             style={styles.webView}
             
+            scrollEnabled={true}
             javaScriptEnabled={true}
             onLoadStart={() => setLoading(true)}
             onLoadEnd={() => setLoading(false)}
             onLoad={() => setLoading(false)}
-            scrollEnabled={false}
+          
             useWebKit={true}
             scalesPageToFit={false}
             setSupportMultipleWindows={false}
