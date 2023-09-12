@@ -1,67 +1,57 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   AppRegistry,
-  StyleSheet,
-  View,
-  StatusBar,
-  BackHandler,
-  Text,
-  Alert,
-  Linking, // Import Linking
-  SafeAreaView,
-} from 'react-native';
+  StyleSheet,View,StatusBar,BackHandler,Text,Alert,Linking,SafeAreaView,} from 'react-native';
 import { WebView } from 'react-native-webview';
 import SplashScreen from './src/SplashScreen';
 import NetInfo from '@react-native-community/netinfo';
 
-// განსაზღვრეთ BsuPortal-ის მთავარი ფუნქციური კომპონენტი.
 const BsuPortal = () => {
-  // განსაზღვრეთ მდგომარეობის ცვლადები useState hook-ის გამოყენებით.
-  const [showSplashScreen, setShowSplashScreen] = useState(true); // აკონტროლებს დახრილი ეკრანის ხილვადობას.
-  const webViewRef = useRef(null); // მითითება WebView კომპონენტზე.
-  const [newUrl, setNewUrl] = useState(''); // ინახავს URL-ს WebView-ში ჩასატვირთად.
-  const [loading, setLoading] = useState(true); // მიუთითებს არის თუ არა WebView ჩატვირთვის მდგომარეობაში.
-  const [isConnected, setIsConnected] = useState(true); // მიუთითებს, არის თუ არა მოწყობილობა დაკავშირებული ინტერნეტთან.
-  
+  const [showSplashScreen, setShowSplashScreen] = useState(true);
+  const webViewRef = useRef(null);
+  const [newUrl, setNewUrl] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [isConnected, setIsConnected] = useState(true);
 
-  // useEffect hook ტექნიკის უკანა ღილაკის დაჭერისა და დახრილი ეკრანის დასამალად.
+  // --- useEffect ტექნიკის დაბრუნების ღილაკის დასამუშავებლად---
   useEffect(() => {
-    // განსაზღვრეთ ფუნქცია ტექნიკის უკანა ღილაკის დაჭერით.
+    // უკანა ღილაკის დაჭერის ფუნქცია
     const backAction = () => {
       if (webViewRef.current) {
-        webViewRef.current.goBack(); // დაუბრუნდით WebView ნავიგაციის ისტორიას.
+        webViewRef.current.goBack();
         console.log('Hardware back button pressed. Navigating back in WebView.');
-        return true; // თავიდან აიცილეთ ნაგულისხმევი უკან მოქმედება.
+        return true;
       }
-      return false; // დაუშვით ნაგულისხმევი უკან მოქმედება.
+      return false;
     };
 
-    BackHandler.addEventListener('hardwareBackPress', backAction); // დაარეგისტრირეთ ტექნიკის უკანა ღილაკის მსმენელი.
+    // მოვლენის მსმენელის დამატება აპარატურის უკან ღილაკისთვის
+    BackHandler.addEventListener('hardwareBackPress', backAction);
 
-    // დაყოვნებული ეკრანის დამალვა (3 წამი).
+    // 3 წამის შემდეგ დამალეთ დახრილი ეკრანი
     setTimeout(() => {
       console.log('Splash screen hidden after 3 seconds.');
       setShowSplashScreen(false);
     }, 3000);
 
-    // გააუქმეთ ტექნიკის უკან დაბრუნების ღილაკის მსმენელი, როდესაც კომპონენტი დამონტაჟდება.
+    // გასუფთავება: ამოიღეთ მოვლენის მსმენელი კომპონენტის დემონტაჟის დროს
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', backAction);
     };
   }, []);
 
-  // useEffect hook ინტერნეტ კავშირის მონიტორინგისთვის.
+  // --- useEffect ინტერნეტ კავშირის მონიტორინგისთვის ---
   useEffect(() => {
+    // გამოიწერეთ ქსელის მდგომარეობის ცვლილებები
     const unsubscribe = NetInfo.addEventListener((state) => {
       console.log('Internet connectivity status changed:', state.isConnected);
       setIsConnected(state.isConnected);
 
       if (!state.isConnected) {
         console.log('No Internet. Showing error message.');
-        // თქვენ შეგიძლიათ შეცვალოთ ეს შეცდომის შეტყობინება, როგორც საჭიროა.
         Alert.alert(
-          'Არ არის ინტერნეტ კავშირი',
-          'გთხოვთ, შეამოწმოთ თქვენი ინტერნეტ კავშირი და სცადოთ ხელახლა.',
+          'No Internet Connection',
+          'Please check your internet connection and try again.',
           [
             {
               text: 'Refresh',
@@ -74,76 +64,33 @@ const BsuPortal = () => {
       }
     });
 
+    // გასუფთავება: გამოწერის გაუქმება კომპონენტის დამონტაჟებისას
     return () => {
       unsubscribe();
     };
   }, []);
 
-  // ფუნქცია WebView ნავიგაციის მოვლენების დასამუშავებლად.
-  const handleWebViewNavigation = (newNavState) => {
-    const { url, navigationType } = newNavState;
-
+  // --- handleWebViewNavigation ფუნქცია WebView ნავიგაციისთვის ---
+  const handleWebViewNavigation = (event) => {
+    const { url, navigationType } = event;
+    console.log(url, 'mushaobs');
     if (!isConnected) {
       console.log('No Internet. Preventing WebView navigation.');
-      return false; // WebView-ის ნავიგაციის თავიდან აცილება.
-    }
-
-    if (navigationType === 'click') {
-      if (url.endsWith('.pdf')) {
-        // PDF ჩამოტვირთვის მართვა...
-        if (url.endsWith('.pdf')) {
-          // PDF ჩამოტვირთვის მართვა...
-      
-          return false;
-        }
-
-        Linking.openURL(fileUrl)
-          .then((supported) => {
-            if (!supported) {
-              console.error(`File type not supported: ${fileExtension}`);
-              return false; // ნავიგაციის თავიდან აცილება, თუ ფაილის ტიპი არ არის მხარდაჭერილი
-            }
-          })
-          .catch((err) => {
-            console.error('An error occurred while opening the URL:', err);
-            return false; // ნავიგაციის თავიდან აცილება შეცდომებზე
-          });
-      } else if (url.startsWith('mailto:')) {
-        // ელ.ფოსტის ბმულების მართვა...
-        Linking.openURL(url);
-        return false;
-      } else if (url.includes('facebook.com')) {
-        // გახსენით Facebook ნაგულისხმევ ბრაუზერში ან Facebook აპში.
-        Linking.openURL(url);
-        return false;
-      } else if (url.includes('instagram.com')) {
-        // გახსენით Instagram ნაგულისხმევ ბრაუზერში ან Instagram აპში.
-        Linking.openURL(url);
-        return false;
-      } else if (url.includes('youtube.com')) {
-        // გახსენით YouTube ნაგულისხმევ ბრაუზერში ან YouTube აპში.
-        Linking.openURL(url);
-        return false;
-      } else if (url.includes('zoom.us')) {
-        // გახსენით Zoom ნაგულისხმევ ბრაუზერში ან Zoom აპში.
-        Linking.openURL(url);
-        return false;
-      } else if (url.includes('teams.microsoft.com')) {
-        // გახსენით Microsoft Teams ნაგულისხმევ ბრაუზერში ან Microsoft Teams აპში.
-        Linking.openURL(url);
-        return false;
-      } else if (url.includes('drive.google.com')) {
-        // გახსენით Google Drive ნაგულისხმევ ბრაუზერში ან Google Drive აპში.
-        Linking.openURL(url);
-
       return false;
-      }
     }
-    
-   
-    return true; // ჩვეულებრივი WebView ნავიგაციის დაშვება ბმულების სხვა ტიპებისთვის.
+
+    // განახორციელეთ HTTPS, თუ URL უკვე არ იწყება მისით
+    if (!url.startsWith('https://')) {
+      console.log('Insecure connection detected. Redirecting to HTTPS.');
+      const secureUrl = 'https://' + url;
+      webViewRef.current.injectJavaScript(`
+        window.location.href = "${secureUrl}";
+      `);
+      return false;
+    }
+
+    return true;
   };
-  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -160,33 +107,44 @@ const BsuPortal = () => {
               <Text style={styles.internetMessageText}>Please turn on the Internet.</Text>
             </View>
           )}
-          
+
+          {/* WebView კომპონენტი */}
           <WebView
-            ref={webViewRef}
-            source={{ uri: newUrl || 'https://portal.bsu.edu.ge/' }}
-            style={styles.webView}
-            
-            scrollEnabled={true}
-            javaScriptEnabled={true}
-            onLoadStart={() => setLoading(true)}
-            onLoadEnd={() => setLoading(false)}
-            onLoad={() => setLoading(false)}
-          
-            useWebKit={true}
-            scalesPageToFit={false}
-            setSupportMultipleWindows={false}
-
-            userAgent={'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.190 Safari/537.36'}
-           
-    
-            onShouldStartLoadWithRequest={handleWebViewNavigation}
-
-            injectedJavaScript={`
-              const meta = document.createElement('meta');
-              meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
-              meta.setAttribute('name', 'viewport');
-              document.getElementsByTagName('head')[0].appendChild(meta);
-            `}
+             ref={webViewRef}
+             // მიუთითეთ წყაროს URL WebView-ისთვის, გამოიყენეთ „newUrl“, თუ ეს შესაძლებელია, ან ნაგულისხმევი URL
+             source={{ uri: newUrl || 'https://portal.bsu.edu.ge/' }}
+             style={styles.webView}
+             // ჩართეთ გადახვევა WebView-ში
+             scrollEnabled={true}
+             // ჩართეთ JavaScript-ის შესრულება WebView-ში
+             javaScriptEnabled={true}
+             // გამოძახება „ჩატვირთვის“ მდგომარეობის დასაყენებლად ჭეშმარიტად, როდესაც WebView ჩატვირთვას დაიწყებს
+             onLoadStart={() => setLoading(true)}
+             // გამოძახება „ჩატვირთვის“ მდგომარეობის დასაყენებლად false-ზე, როდესაც WebView დაასრულებს ჩატვირთვას
+             onLoadEnd={() => setLoading(false)}
+             // გამოძახება „ჩატვირთვის“ მდგომარეობის დასაყენებლად false-ზე, როდესაც WebView დაასრულებს ჩატვირთვას
+             onLoad={() => setLoading(false)}
+             // გამოიყენეთ WKWebView ძრავა iOS-ზე გაუმჯობესებული შესრულებისა და თანმიმდევრულობისთვის
+             useWebKit={true}
+             // გამორთეთ შინაარსის ავტომატური მასშტაბირება ეკრანზე მორგებისთვის
+             scalesPageToFit={false}
+             // დააყენეთ მომხმარებლის აგენტის სათაური WebView-ისთვის
+             userAgent={
+               'Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Mobile Safari/537.36'
+             }
+             // გამორთეთ მხარდაჭერა მრავალი ფანჯრის ან ჩანართისთვის WebView-ში
+             setSupportMultipleWindows={false}
+             // ჩართეთ გაზიარებული ქუქიები მომხმარებლის სესიების შესანარჩუნებლად WebView-სა და აპს შორის
+             sharedCookiesEnabled={true}
+             // შერეული კონტენტის ჩატვირთვის დაშვება (HTTP კონტენტი HTTPS გვერდზე)
+             mixedContentMode="always"
+             // შეიტანეთ მორგებული JavaScript კოდი WebView-ში ხედვის პორტის მეტა ტეგის დასაყენებლად
+             injectedJavaScript={`
+               const meta = document.createElement('meta');
+               meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
+               meta.setAttribute('name', 'viewport');
+               document.getElementsByTagName('head')[0].appendChild(meta);
+             `}
           />
         </>
       )}
@@ -194,7 +152,6 @@ const BsuPortal = () => {
   );
 };
 
-// განსაზღვრეთ სტილები კომპონენტისთვის.
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -223,8 +180,8 @@ const styles = StyleSheet.create({
   },
 });
 
-// დაარეგისტრირეთ BsuPortal კომპონენტი AppRegistry-ში.
+// დაარეგისტრირეთ კომპონენტი AppRegistry-ით
 AppRegistry.registerComponent('BsuPortal', () => BsuPortal);
 
-// BsuPortal კომპონენტის ექსპორტი, როგორც ნაგულისხმევი ექსპორტი.
+// კომპონენტის ექსპორტი, როგორც ნაგულისხმევი ექსპორტი
 export default BsuPortal;
