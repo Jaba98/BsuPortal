@@ -6,7 +6,7 @@ import SplashScreen from './src/SplashScreen';
 import NetInfo from '@react-native-community/netinfo';
 import { Image } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-
+import RNFS from 'react-native-fs';
 
 const BsuPortal = () => {
   const [showSplashScreen, setShowSplashScreen] = useState(true); 
@@ -17,7 +17,7 @@ const BsuPortal = () => {
   const [showHeader, setShowHeader] = useState(false);
   const [redirectedUrl, setRedirectedUrl] = useState('');
   const [originalUrl, setOriginalUrl] = useState('https://portal.bsu.edu.ge/'); // Track the original URL
-
+  const [showPdfView, setShowPdfView] = useState(false);
 
 
   // --- useEffect ტექნიკის დაბრუნების ღილაკის დასამუშავებლად---
@@ -78,44 +78,99 @@ const BsuPortal = () => {
     };
     
   }, []);
-
-
-  // --- handleWebViewNavigation ფუნქცია WebView ნავიგაციისთვის ---
+  
+  // --- handleWebViewNavigation ფუნქცია WebView ნავიგაციისთვის --
   const handleWebViewNavigation = (event) => {
     const { url, navigationType } = event;
-    console.log(url, 'მუშაობს')
-
-
+    console.log(`URL: ${url}, Navigation Type: ${navigationType}`);
+  
     // Remove "https://" prefix from the URL
-     const urlWithoutHttps = url.replace(/^https:\/\/(www\.)?/, '');
-     // Set the redirected URL
-     setRedirectedUrl(urlWithoutHttps);
+    const urlWithoutHttps = url.replace(/^https:\/\/(www\.)?/, '');
+    // Set the redirected URL
+    setRedirectedUrl(urlWithoutHttps);
 
-     // Check if the URL starts with '//portal' to hide/show the header
+    // Check if the URL starts with 'https://portal' to hide/show the header
     if (url.startsWith('https://portal')) {
       setShowHeader(false);
     } else {
       setShowHeader(true);
     }
-
+  
     if (!isConnected) {
       console.log('No Internet. Preventing WebView navigation.');
       return false;
     }
-    
-    // განახორციელეთ HTTPS, თუ URL უკვე არ იწყება მისით
+  
+    // Ensure that the URL starts with 'https://'
     if (!url.startsWith('https://')) {
       console.log('Insecure connection detected. Redirecting to HTTPS.');
-      const secureUrl = 'https://' + url;
+      const secureUrl = 'https://' + url.replace(/^https?:\/\//i, '');
       webViewRef.current.injectJavaScript(`
         window.location.href = "${secureUrl}";
       `);
-      return false
+      return false;
     }
 
-    return true;
 
+    // Allow other requests to load
+    return true;
   };
+
+        // Updated handleFileDownload function to handle file downloads
+      const handleFileDownload = async (url) => {
+        try {
+          const downloadDir = RNFS.DownloadDirectoryPath;
+          const response = await RNFetchBlob.config({
+            path: `${downloadDir}/filename.extension`, // Default name, will be updated based on headers
+            overwrite: true,
+          }).fetch('GET', url);
+      
+          const status = response.info().status;
+          console.log('Response Status:', status);
+      
+          if (status === 200) {
+            // Get the content disposition header
+            const contentDisposition = response.info().headers['Content-Disposition'];
+            
+            if (contentDisposition) {
+              // Extract the filename from the content disposition header
+              const filename = contentDisposition.split(';')[1].trim().split('=')[1].replace(/"/g, '');
+              
+              // Update the path with the extracted filename
+              const filePath = `${downloadDir}/${filename}`;
+              
+              // Move the downloaded file to the correct path
+              await RNFS.moveFile(response.path(), filePath);
+      
+              console.log('File Downloaded. Path:', filePath);
+              
+              // Check if the file exists at the specified path
+              const exists = await RNFS.exists(filePath);
+              if (exists) {
+                console.log('File exists at the specified path.');
+              } else {
+                console.error('File does not exist at the specified path.');
+              }
+            } else {
+              console.error('Content-Disposition header not found.');
+            }
+          } else {
+            console.error('HTTP Error:', status);
+            
+            // Handle other HTTP status codes here
+            if (status === 404) {
+              console.error('File not found.');
+            } else if (status === 403) {
+              console.error('Access denied.');
+            } else {
+              console.error('Unhandled HTTP status code.');
+            }
+          }
+        } catch (error) {
+          console.error('File download error:', error);
+          // Handle the error and log it
+        }
+      };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -129,26 +184,25 @@ const BsuPortal = () => {
              </Text>
            </View>
            <TouchableOpacity
-        style={styles.closeButtonContainer}
-        onPress={() => {
-          if (webViewRef.current) {
-            // Navigate back to the original URL when the button is pressed
-            const secureUrl = 'https://' + originalUrl.replace(/^https:\/\/(www\.)?/, '');
-            webViewRef.current.injectJavaScript(`
-              window.location.href = "${secureUrl}";
-            `);
-          }
-        }}
-      >
-        {/* Replace the "Close" text with an Image */}
-        <Image
-          source={require('./image/Close_ic.png')} // Provide the correct image path
-          style={styles.closeButtonImage} // Adjust the width and height as needed
-        />
-      </TouchableOpacity>
+             style={styles.closeButtonContainer}
+             onPress={() => {
+               if (webViewRef.current) {
+                if (webViewRef.current) {
+                  // Navigate back to the original URL when the button is pressed
+                  webViewRef.current.injectJavaScript(`
+                    window.location.href = "${originalUrl}";
+                  `);
+               }}
+             }}
+             >
+             {/* Replace the "Close" text with an Image */}
+             <Image
+               source={require('./image/Close_ic.png')} // Provide the correct image path
+               style={styles.closeButtonImage} // Adjust the width and height as needed
+             />
+           </TouchableOpacity>
          </View>
       )}
-
       {showSplashScreen ? (
         <View style={styles.splashContainer}>
           <StatusBar backgroundColor="#ffffff" barStyle="dark-content" />
@@ -161,8 +215,6 @@ const BsuPortal = () => {
               <Text style={styles.internetMessageText}>Please turn on the Internet.</Text>
             </View>
           )}
-
-          {/* WebView კომპონენტი */}
           <WebView
              ref={webViewRef}
              // მიუთითეთ წყაროს URL WebView-ისთვის, გამოიყენეთ „newUrl“, თუ ეს შესაძლებელია, ან ნაგულისხმევი URL
@@ -180,7 +232,7 @@ const BsuPortal = () => {
              onLoadEnd={() => setLoading(false)}
              // გამოძახება „ჩატვირთვის“ მდგომარეობის დასაყენებლად false-ზე, როდესაც WebView დაასრულებს ჩატვირთვას
              onLoad={() => {
-              setLoading(false); // Hide loading indicator
+              setLoading(true); // Hide loading indicator
             }}
              // გამოიყენეთ WKWebView ძრავა iOS-ზე გაუმჯობესებული შესრულებისა და თანმიმდევრულობისთვის
              useWebKit={true}
@@ -198,23 +250,31 @@ const BsuPortal = () => {
              mixedContentMode="always"
              // შეიტანეთ მორგებული JavaScript კოდი WebView-ში ხედვის პორტის მეტა ტეგის დასაყენებლად
              injectedJavaScript={`
-               const meta = document.createElement('meta');
-               meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
-               meta.setAttribute('name', 'viewport');
-               document.getElementsByTagName('head')[0].appendChild(meta);
-             `}
+                  // Disable clicking on links leading to the specific URL
+                  document.querySelectorAll('a[href="URL_TO_STOP_DOWNLOADING"]').forEach(link => {
+                    link.addEventListener('click', (event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                    });
+                  });
+                `}
 
-             onNavigationStateChange={handleWebViewNavigation}
-             onShouldStartLoadWithRequest={(event) => {
-              const { url, navigationType } = event;
-              console.log(`URL: ${url}, გადმოწერის ლინკი გამომიჩნდდა: ${navigationType}`);
+              onNavigationStateChange={handleWebViewNavigation}
+              onShouldStartLoadWithRequest={(event) => {
+                const { url } = event;
             
-              // Allow other requests to load
-              console.log('Allowed request');
-              return true;
-            }}
+                // Check if the URL contains the download.php key
+                if (url.includes('Download.php?Key=')) {
+                  // Handle the file download
+                  handleFileDownload(url);
+                  return false; // Return false to cancel the WebView navigation
+                }
+            
+                // Allow other requests to load
+                return true;
+              }}
 
-               />
+               /> 
              </>
            )}
     </SafeAreaView>
@@ -225,6 +285,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
   splashContainer: {
     flex: 1,
     backgroundColor: '#000000',
