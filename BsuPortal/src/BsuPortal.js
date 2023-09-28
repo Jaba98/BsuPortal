@@ -88,7 +88,6 @@ const BsuPortal = () => {
 
         }
 
-
         // PushNotification.localNotification({
         //  title: 'Download failed',
         //  message: 'File download failed', // Customize as needed
@@ -101,7 +100,6 @@ const BsuPortal = () => {
         //  id: notificationId,
         //  });
 
-        // Updated handleFileDownload function to handle file downloads
         const handleFileDownload = async (url) => {
           try {
             // Request WRITE_EXTERNAL_STORAGE permission
@@ -109,81 +107,55 @@ const BsuPortal = () => {
               PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
             );
         
-            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-              // Proceed with file download
-            } else {
+            if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
               // Handle permission denied
               console.error('Permission denied for file download.');
               return;
             }
         
             const downloadDir = RNFS.DownloadDirectoryPath;
-            ToastAndroid.show('Downloading file...', ToastAndroid.SHORT);
+            ToastAndroid.show('მიმდინარეობს ფაილის გადმოწერა...', ToastAndroid.SHORT);
         
             const response = await RNFetchBlob.config({
               path: `${downloadDir}/filename.extension`,
               overwrite: true,
-              notification: {
-                channelId: 'my-channel-id', // Specify the channel ID here
-                progress: {
-                  title: 'Download Progress',
-                  message: 'Downloading...',
-                },
-              },
             }).fetch('GET', url);
         
             const status = response.info().status;
             console.log('Response Status:', status);
         
-            ToastAndroid.show('Download completed!', ToastAndroid.SHORT);
+            ToastAndroid.show('ჩამოტვირთვა დასრულდა!', ToastAndroid.SHORT);
         
             if (status === 200) {
               const contentDisposition = response.info().headers['Content-Disposition'];
         
               if (contentDisposition) {
-                const filename = contentDisposition
-                  .split(';')[1]
-                  .trim()
-                  .split('=')[1]
-                  .replace(/"/g, '');
+                const filenameMatch = contentDisposition.match(/filename="(.+?)"/);
+                if (filenameMatch && filenameMatch.length > 1) {
+                  const filename = filenameMatch[1];
+                  const filePath = `${downloadDir}/${filename}`;
         
-                const filePath = `${downloadDir}/${filename}`;
+                  await RNFS.moveFile(response.path(), filePath);
         
-                await RNFS.moveFile(response.path(), filePath);
+                  console.log('File Downloaded. Path:', filePath);
+                  const exists = await RNFS.exists(filePath);
         
-                console.log('File Downloaded. Path:', filePath);
-                PushNotification.createChannel(
-                  {
-                    channelId: 'my-channel-id', // A unique ID for the channel
-                    channelName: 'My Channel', // A user-visible name for the channel
-                    channelDescription: 'My Notification Channel', // A description for the channel
-                    importance: 4, // Notification importance (4 is high, 0 is none)
-                    vibrate: true, // Vibration for notifications
-                  },
-                  (created) => console.log(`Channel created: ${created}`)
-                );
-                const exists = await RNFS.exists(filePath);
-                
-                if (exists) {
-                  console.log('File exists at the specified path.');
+                  if (exists) {
+                    console.log('File exists at the specified path.');
+                  } else {
+                    console.error('File does not exist at the specified path.');
+                  }
+                  // Use 'filename' in the addCompleteDownload function
+                   RNFetchBlob.android.addCompleteDownload({
+                     title: `${filename}`,
+                     description: 'Download complete',
+                     mime: 'application/*',
+                     path: filePath,
+                     showNotification: true,
+                   });
                 } else {
-                  console.error('File does not exist at the specified path.');
+                  console.error('Unable to extract filename from Content-Disposition header.');
                 }
-        
-                // Show download completion notification
-                PushNotification.localNotification({
-                  channelId: 'my-channel-id',
-                  smallIcon: 'ic_launcher_round',
-                  title: 'Download Completed',
-                  message: `${filename}`, // Include the file name in the message
-                  actions: ['Open'], // Add an "Open" action
-                  data: {
-                   filePath, // Pass the filePath to the notification data
-                   },
-                });
-                
-             // Clear the ongoing download notification
-                PushNotification.cancelLocalNotification({ channelId: 'my-channel-id' });
               } else {
                 console.error('Content-Disposition header not found.');
               }
@@ -287,7 +259,7 @@ const BsuPortal = () => {
                   return false; // Return false to cancel the WebView navigation
                 }
                 // Check if the URL ends with a common file extension (e.g., PDF, Excel, Word)
-                const fileExtensions = ['.pdf', 'pdf','.xlsx', '.xls', '.doc', '.docx'];
+                const fileExtensions = ['.pdf', 'pdf','.xlsx', 'xlsx','.xls', 'xls','.doc', 'doc','.docx','docx'];
                 const lowercaseUrl = url.toLowerCase();
                 const hasValidExtension = fileExtensions.some(extension => lowercaseUrl.endsWith(extension));
                 
