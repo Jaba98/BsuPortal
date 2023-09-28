@@ -11,18 +11,16 @@ import { PermissionsAndroid, Platform} from 'react-native';
 import { useNavigation,useRoute, } from '@react-navigation/native';
 
 
+
 const BsuPortal = () => {
   const [showSplashScreen, setShowSplashScreen] = useState(true); 
   const webViewRef = useRef(null);
   const [newUrl, setNewUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
-  const [showHeader, setShowHeader] = useState(false);
-  const [redirectedUrl, setRedirectedUrl] = useState('');
   const [originalUrl, setOriginalUrl] = useState('https://portal.bsu.edu.ge/'); // Track the original URL
   const navigation = useNavigation(); // Use useNavigation inside the functional component
   const route = useRoute(); // Use useRoute to access route params
-
 
   // --- useEffect ტექნიკის დაბრუნების ღილაკის დასამუშავებლად---
   useEffect(() => {
@@ -90,6 +88,7 @@ const BsuPortal = () => {
 
         }
 
+
         // PushNotification.localNotification({
         //  title: 'Download failed',
         //  message: 'File download failed', // Customize as needed
@@ -101,90 +100,111 @@ const BsuPortal = () => {
         //  number: 0,
         //  id: notificationId,
         //  });
-        
+
         // Updated handleFileDownload function to handle file downloads
-     
         const handleFileDownload = async (url) => {
           try {
+            // Request WRITE_EXTERNAL_STORAGE permission
             const granted = await PermissionsAndroid.request(
               PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
             );
-      
+        
             if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-              const downloadDir = RNFS.DownloadDirectoryPath;
-              ToastAndroid.show('მიმდინარეობს ჩამოტვირთვა...', ToastAndroid.SHORT);
-      
-              const response = await RNFetchBlob.config({
-                path: `${downloadDir}/filename.extension`,
-                overwrite: true,
-                notification: true,
-              }).fetch('GET', url);
-      
-              const status = response.info().status;
-              console.log('Response Status:', status);
-      
-              ToastAndroid.show('ჩამოტვირთვა დასრულდა!', ToastAndroid.SHORT);
-      
-              if (status === 200) {
-                const contentDisposition = response.info().headers['Content-Disposition'];
-      
-                if (contentDisposition) {
-                  const filename = contentDisposition
-                    .split(';')[1]
-                    .trim()
-                    .split('=')[1]
-                    .replace(/"/g, '');
-      
-                  const filePath = `${downloadDir}/${filename}`;
-      
-                  await RNFS.moveFile(response.path(), filePath);
-      
-                  console.log('File Downloaded. Path:', filePath);
-      
-                  const exists = await RNFS.exists(filePath);
-                  if (exists) {
-                    console.log('File exists at the specified path.');
-                  } else {
-                    console.error('File does not exist at the specified path.');
-                  }
+              // Proceed with file download
+            } else {
+              // Handle permission denied
+              console.error('Permission denied for file download.');
+              return;
+            }
+        
+            const downloadDir = RNFS.DownloadDirectoryPath;
+            ToastAndroid.show('Downloading file...', ToastAndroid.SHORT);
+        
+            const response = await RNFetchBlob.config({
+              path: `${downloadDir}/filename.extension`,
+              overwrite: true,
+              notification: {
+                channelId: 'my-channel-id', // Specify the channel ID here
+                progress: {
+                  title: 'Download Progress',
+                  message: 'Downloading...',
+                },
+              },
+            }).fetch('GET', url);
+        
+            const status = response.info().status;
+            console.log('Response Status:', status);
+        
+            ToastAndroid.show('Download completed!', ToastAndroid.SHORT);
+        
+            if (status === 200) {
+              const contentDisposition = response.info().headers['Content-Disposition'];
+        
+              if (contentDisposition) {
+                const filename = contentDisposition
+                  .split(';')[1]
+                  .trim()
+                  .split('=')[1]
+                  .replace(/"/g, '');
+        
+                const filePath = `${downloadDir}/${filename}`;
+        
+                await RNFS.moveFile(response.path(), filePath);
+        
+                console.log('File Downloaded. Path:', filePath);
+                PushNotification.createChannel(
+                  {
+                    channelId: 'my-channel-id', // A unique ID for the channel
+                    channelName: 'My Channel', // A user-visible name for the channel
+                    channelDescription: 'My Notification Channel', // A description for the channel
+                    importance: 4, // Notification importance (4 is high, 0 is none)
+                    vibrate: true, // Vibration for notifications
+                  },
+                  (created) => console.log(`Channel created: ${created}`)
+                );
+                const exists = await RNFS.exists(filePath);
+                
+                if (exists) {
+                  console.log('File exists at the specified path.');
                 } else {
-                  console.error('Content-Disposition header not found.');
+                  console.error('File does not exist at the specified path.');
                 }
+        
+                // Show download completion notification
+                PushNotification.localNotification({
+                  channelId: 'my-channel-id',
+                  smallIcon: 'ic_launcher_round',
+                  title: 'Download Completed',
+                  message: `${filename}`, // Include the file name in the message
+                  actions: ['Open'], // Add an "Open" action
+                  data: {
+                   filePath, // Pass the filePath to the notification data
+                   },
+                });
+                
+             // Clear the ongoing download notification
+                PushNotification.cancelLocalNotification({ channelId: 'my-channel-id' });
               } else {
-                console.error('HTTP Error:', status);
-      
-                if (status === 404) {
-                  console.error('File not found.');
-                } else if (status === 403) {
-                  console.error('Access denied.');
-                } else {
-                  console.error('Unhandled HTTP status code.');
-                }
+                console.error('Content-Disposition header not found.');
               }
             } else {
-              console.error('Permission denied for file download.');
+              console.error('HTTP Error:', status);
+        
+              if (status === 404) {
+                console.error('File not found.');
+              } else if (status === 403) {
+                console.error('Access denied.');
+              } else {
+                console.error('Unhandled HTTP status code.');
+              }
             }
           } catch (error) {
             console.error('File download error:', error);
           }
-      };
+        };
+        
 
-
-    //  const headerNavigation = (event) => {
-    //    const { url, navigationType } = event;
-    //    console.log(`URL: ${url}, Navigation Type: ${navigationType}`);
-    //  
-    //    // Remove "https://" prefix from the URL
-    //    const urlWithoutHttps = url.replace(/^https:\/\/(www\.)?/, '');
-    //    // Set the redirected URL
-    //    setRedirectedUrl(urlWithoutHttps);
-    //    // Check if the URL starts with 'https://portal' to hide/show the header
-    //    if (url.startsWith('https://portal')) {
-    //      setShowHeader(false);
-    //    } else {
-    //      setShowHeader(true);
-    //    }
-    //  }
+        
    return (
     <SafeAreaView style={styles.container}>
             <StatusBar backgroundColor="#03a9f3" barStyle="dark-content" />
@@ -267,7 +287,7 @@ const BsuPortal = () => {
                   return false; // Return false to cancel the WebView navigation
                 }
                 // Check if the URL ends with a common file extension (e.g., PDF, Excel, Word)
-                const fileExtensions = ['.pdf', '.xlsx', '.xls', '.doc', '.docx'];
+                const fileExtensions = ['.pdf', 'pdf','.xlsx', '.xls', '.doc', '.docx'];
                 const lowercaseUrl = url.toLowerCase();
                 const hasValidExtension = fileExtensions.some(extension => lowercaseUrl.endsWith(extension));
                 
