@@ -1707,6 +1707,11 @@
   resolved "https://registry.npmjs.org/@react-native-community/netinfo/-/netinfo-9.4.1.tgz"
   integrity sha512-dAbY5mfw+6Kas/GJ6QX9AZyY+K+eq9ad4Su6utoph/nxyH3whp5cMSgRNgE2VhGQVRZ/OG0qq3IaD3+wzoqJXw==
 
+"@react-native-community/progress-bar-android@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.npmjs.org/@react-native-community/progress-bar-android/-/progress-bar-android-1.0.5.tgz"
+  integrity sha512-/IYLHdoqeDqqGQMh9/qYgIReISBIu09lLNbrn70r98+IqQe9WFLuhAr/sdrDKxCUZDQyLqUc0p3rJ50VV0tR3g==
+
 "@react-native-community/push-notification-ios@^1.10.1":
   version "1.11.0"
   resolved "https://registry.npmjs.org/@react-native-community/push-notification-ios/-/push-notification-ios-1.11.0.tgz"
@@ -6218,7 +6223,7 @@ react-native-webview@^13.6.0:
     escape-string-regexp "2.0.0"
     invariant "2.2.4"
 
-react-native@*, react-native@^0.72.4, react-native@>=0.33, react-native@>=0.42.0, react-native@>=0.56, react-native@>=0.57, react-native@>=0.58.4, react-native@>=0.59, react-native@>=0.63.3:
+react-native@*, react-native@^0.72.4, react-native@>=0.33, react-native@>=0.42.0, react-native@>=0.56, react-native@>=0.57, react-native@>=0.58.4, react-native@>=0.59, react-native@>=0.60.0, react-native@>=0.63.3:
   version "0.72.4"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.72.4.tgz"
   integrity sha512-+vrObi0wZR+NeqL09KihAAdVlQ9IdplwznJWtYrjnQ4UbCW6rkzZJebRsugwUneSOKNFaHFEo1uKU89HsgtYBg==
@@ -6298,7 +6303,7 @@ react-test-renderer@18.2.0:
     react-shallow-renderer "^16.15.0"
     scheduler "^0.23.0"
 
-react@*, "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0", react@^18.2.0, react@>=16.0, react@>=16.13.1, react@>=16.6.3, react@>=16.8, react@>=17.0.0, react@18.2.0:
+react@*, "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0", react@^18.2.0, react@>=16.0, react@>=16.13.1, react@>=16.6.3, react@>=16.8, react@>=16.8.6, react@>=17.0.0, react@18.2.0:
   version "18.2.0"
   resolved "https://registry.npmjs.org/react/-/react-18.2.0.tgz"
   integrity sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==

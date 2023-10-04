@@ -1,15 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, BackHandler, Text } from 'react-native';
+import { View, StyleSheet, BackHandler, Text, ProgressBarAndroid,ProgressViewIOS, Platform, } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { ToastAndroid } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import { Linking } from 'react-native';
 
+
 const NewTab = ({ route, navigation }) => {
   const { redirectedUrl } = route.params;
   const webViewRef = useRef(null);
-  const [isLoading, setIsLoading] = useState(true);
   const fileExtensions = ['.pdf', 'pdf', '.xlsx', 'xlsx', '.xls', 'xls', '.doc', 'doc', '.docx', 'docx','zip','rar','RAR'];
+  const [progress, setProgress] = useState(0); // Add a state variable for progress
+  const [showProgressBar, setShowProgressBar] = useState(true); // Initially set to true
+
+
 
 
   const extractDomain = (url) => {
@@ -45,17 +49,7 @@ const NewTab = ({ route, navigation }) => {
 
       const handleWebViewNavigation = (event) => {
         const { url, navigationType } = event;    
-
-        console.log(`URL: ${url}, Navigation Type: ${navigationType}`);
-        if (navigationType === 'click' || navigationType === 'formsubmit') {
-          // A link was clicked or a form was submitted, so we consider it as loading
-          setIsLoading(true);
-        } else if (navigationType === 'other') {
-          if (isLoading && url !== redirectedUrl) {
-            // This handles the completion of loading when other types of navigation occur
-            setIsLoading(false);
-          }
-        }
+        console.log(`Navigation Type: ${navigationType}`);
          // განახორციელეთ HTTPS, თუ URL უკვე არ იწყება მისით
          if (!url.startsWith('https://')) {
           console.log('Insecure connection detected. Redirecting to HTTPS.');
@@ -71,15 +65,7 @@ const NewTab = ({ route, navigation }) => {
     return true;
   };
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerTitle: () => (
-        <Text style={{ color: '#03a9f3', fontSize: 18, textAlign: 'center' }}>
-          {isLoading || !webViewRef.current?.state.url ? 'დაელოდეთ...' : extractDomain(webViewRef.current.state.url)}
-        </Text>
-      ),
-    });
-  }, [isLoading]);
+
   const downloadFile = (url) => {
     // Set up the config for the file download
     const config = {
@@ -119,21 +105,49 @@ const NewTab = ({ route, navigation }) => {
       });
   };
   
-  
-  
 
   return (
     <View style={styles.container}>
+        {/* Conditionally render the progress bar based on visibility */}
+        {showProgressBar && (
+        <View style={styles.progressBarContainer}>
+          {/* Change the color of the progress bar */}
+          {Platform.OS === 'android' ? (
+            <ProgressBarAndroid
+              styleAttr="Horizontal"
+              indeterminate={false}
+              progress={progress}
+              color="#03a9f3" // Change the color of the progress bar
+            />
+          ) : (
+            <ProgressViewIOS
+              progress={progress}
+              progressTintColor="#03a9f3"
+            />
+          )}
+        </View>
+      )}
+
       <WebView
         ref={webViewRef}
         source={{ uri: redirectedUrl }}
         style={styles.webView}
         javaScriptEnabled={true}
         domStorageEnabled={true}
-        startInLoadingState={isLoading} // Set startInLoadingState based on isLoading state
+        //startInLoadingState={isLoading} // Set startInLoadingState based on isLoading state
         setSupportMultipleWindows={false}
         mixedContentMode="always"
         useWebKit={true}
+        onLoadProgress={({ nativeEvent }) => {
+          const { progress } = nativeEvent;
+          setProgress(progress);
+          setShowProgressBar(true);
+
+          if (progress === 1.0) {
+            // Hide the progress bar and its background when fully loaded
+            setShowProgressBar(false);
+          }
+        }}
         userAgent={
           'Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Mobile Safari/537.36'
         }
@@ -196,6 +210,9 @@ const styles = StyleSheet.create({
   },
   webView: {
     flex: 1,
+  },
+  progressBarContainer: {
+    backgroundColor: '#fff', // Change the background color of the progress bar container
   },
 });
 
