@@ -4,11 +4,14 @@ import { WebView} from 'react-native-webview';
 import SplashScreen from './SplashScreen';
 import NetInfo from '@react-native-community/netinfo';
 import RNFetchBlob from 'rn-fetch-blob';
-import RNFS from 'react-native-fs';
 import PushNotification from 'react-native-push-notification'; // for Android and iOS
 import { ToastAndroid } from 'react-native';
-import { PermissionsAndroid, Platform} from 'react-native';
 import { useNavigation,useRoute, } from '@react-navigation/native';
+import { PermissionsAndroid, Platform } from 'react-native';
+import RNFS from 'react-native-fs';
+import axios from 'axios';
+import blobToBase64 from 'blob-to-base64';
+
 
 
 
@@ -21,6 +24,7 @@ const BsuPortal = () => {
   const [originalUrl, setOriginalUrl] = useState('https://portal.bsu.edu.ge/'); // Track the original URL
   const navigation = useNavigation(); // Use useNavigation inside the functional component
   const route = useRoute(); // Use useRoute to access route params
+  
 
   // --- useEffect ტექნიკის დაბრუნების ღილაკის დასამუშავებლად---
   useEffect(() => {
@@ -85,97 +89,77 @@ const BsuPortal = () => {
         const handleWebViewNavigation = (event) => {
              const { url, navigationType } = event;
              console.log(`URL: ${url}, Navigation Type: ${navigationType}`);
+             
 
         }
-
-        // PushNotification.localNotification({
-        //  title: 'Download failed',
-        //  message: 'File download failed', // Customize as needed
-        //  smallIcon: 'ic_launcher',
-        //  visibility: 'public',
-        //  priority: 'high',
-        //  importance: 'high',
-        //  channelId: 'download-channel',
-        //  number: 0,
-        //  id: notificationId,
-        //  });
-
-        const handleFileDownload = async (url) => {
-          try {
-            // Request WRITE_EXTERNAL_STORAGE permission
-            const granted = await PermissionsAndroid.request(
-              PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
-            );
+        const downloadFile = (url) => {
+          // Set up the config for the file download
+          const config = {
+            fileCache: true,
+          };
         
-            if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-              // Handle permission denied
-              console.error('Permission denied for file download.');
-              return;
-            }
+          ToastAndroid.show('მიმდინარეობს ფაილის გადმოწერა...', ToastAndroid.SHORT);
+          // Start the download
+          RNFetchBlob.config(config)
+            .fetch('GET', url)
+            .then((res) => {
+              // Get the content type from response headers
+              const contentType = res.respInfo.headers['Content-Type'];
         
-            const downloadDir = RNFS.DownloadDirectoryPath;
-            ToastAndroid.show('მიმდინარეობს ფაილის გადმოწერა...', ToastAndroid.SHORT);
-        
-            const response = await RNFetchBlob.config({
-              path: `${downloadDir}/filename.extension`,
-              overwrite: true,
-            }).fetch('GET', url);
-        
-            const status = response.info().status;
-            console.log('Response Status:', status);
-        
-            ToastAndroid.show('ჩამოტვირთვა დასრულდა!', ToastAndroid.SHORT);
-        
-            if (status === 200) {
-              const contentDisposition = response.info().headers['Content-Disposition'];
-        
+              // Get the content-disposition header if available, or use a timestamp-based name
+              let fileName = Date.now(); // Default to timestamp
+              const contentDisposition = res.respInfo.headers['Content-Disposition'];
               if (contentDisposition) {
-                const filenameMatch = contentDisposition.match(/filename="(.+?)"/);
-                if (filenameMatch && filenameMatch.length > 1) {
-                  const filename = filenameMatch[1];
-                  const filePath = `${downloadDir}/${filename}`;
+                const match = /filename="(.+)"/.exec(contentDisposition);
+                if (match) {
+                  fileName = match[1];
+                }
+              }
         
-                  await RNFS.moveFile(response.path(), filePath);
-        
-                  console.log('File Downloaded. Path:', filePath);
-                  const exists = await RNFS.exists(filePath);
-        
-                  if (exists) {
-                    console.log('File exists at the specified path.');
-                  } else {
-                    console.error('File does not exist at the specified path.');
-                  }
-                  // Use 'filename' in the addCompleteDownload function
-                   RNFetchBlob.android.addCompleteDownload({
-                     title: `${filename}`,
-                     description: 'Download complete',
-                     mime: 'application/*',
-                     path: filePath,
-                     showNotification: true,
-                   });
-                } else {
-                  console.error('Unable to extract filename from Content-Disposition header.');
+              // Check if contentType is defined and not null before accessing 'includes'
+              if (contentType && contentType.includes) {
+                // Append an appropriate file extension based on content type
+                if (contentType.includes('pdf')) {
+                  fileName += '.pdf';
+                } else if (contentType.includes('xlsx')) {
+                  fileName += '.xlsx';
+                } else if (contentType.includes('xls')) {
+                  fileName += '.xls';
+                } else if (contentType.includes('docx')) {
+                  fileName += '.docx';
+                } else if (contentType.includes('doc')) {
+                  fileName += '.doc';
                 }
               } else {
-                console.error('Content-Disposition header not found.');
+                console.error('Content-Type is undefined or null:', contentType);
+                return; // Exit the function if contentType is undefined or null
               }
-            } else {
-              console.error('HTTP Error:', status);
         
-              if (status === 404) {
-                console.error('File not found.');
-              } else if (status === 403) {
-                console.error('Access denied.');
-              } else {
-                console.error('Unhandled HTTP status code.');
-              }
-            }
-          } catch (error) {
-            console.error('File download error:', error);
-          }
+              // Move the downloaded file to the appropriate location with the correct name
+              RNFetchBlob.fs
+                .mv(res.path(), `${RNFetchBlob.fs.dirs.DownloadDir}/${fileName}`)
+                .then(() => {
+                  console.log('File downloaded to:', `${RNFetchBlob.fs.dirs.DownloadDir}/${fileName}`);
+        
+                  // Use 'fileName' in the addCompleteDownload function
+                  RNFetchBlob.android.addCompleteDownload({
+                    title: `${fileName}`,
+                    description: 'Download complete',
+                    mime: 'application/*',
+                    path: `${RNFetchBlob.fs.dirs.DownloadDir}/${fileName}`,
+                    showNotification: true,
+                  });
+                  ToastAndroid.show('ჩამოტვირთვა დასრულდა!', ToastAndroid.SHORT);
+                })
+                .catch((error) => {
+                  console.error('Error moving file:', error);
+                });
+            })
+            .catch((error) => {
+              console.error('Error downloading file:', error);
+            });
         };
         
-
         
    return (
     <SafeAreaView style={styles.container}>
@@ -236,7 +220,7 @@ const BsuPortal = () => {
 
                 onNavigationStateChange={(navState) => {
                   handleWebViewNavigation(navState);
-                  //headerNavigation(navState);
+
                 }}
                 
                 
@@ -254,21 +238,20 @@ const BsuPortal = () => {
 
                 // Check if the URL contains the download.php key
                 if (url.includes('Download.php?Key=')) {
-                  // Handle the file download
-                  handleFileDownload(url);
+                  downloadFile(url);
                   return false; // Return false to cancel the WebView navigation
                 }
-                // Check if the URL ends with a common file extension (e.g., PDF, Excel, Word)
-                const fileExtensions = ['.pdf', 'pdf','.xlsx', 'xlsx','.xls', 'xls','.doc', 'doc','.docx','docx'];
-                const lowercaseUrl = url.toLowerCase();
-                const hasValidExtension = fileExtensions.some(extension => lowercaseUrl.endsWith(extension));
+                 // Check if the URL ends with a common file extension (e.g., PDF, Excel, Word)
+                 const fileExtensions = ['.pdf', 'pdf', '.xlsx', 'xlsx', '.xls', 'xls', '.doc', 'doc', '.docx', 'docx','zip','rar','RAR'];
+                 const lowercaseUrl = url.toLowerCase();
+                 const hasValidExtension = fileExtensions.some(extension => lowercaseUrl.endsWith(extension));
+                  
+                  if (hasValidExtension) {
+                    // Handle the file download
+                    downloadFile(url);
+                    return false; // Return false to cancel the WebView navigation
+                  }
                 
-                if (hasValidExtension) {
-                  // Handle the file download
-                  handleFileDownload(url);
-                  return false; // Return false to cancel the WebView navigation
-                }
-
                 // Allow other requests to load
                 return true;
               }}

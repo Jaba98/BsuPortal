@@ -14,6 +14,7 @@ const NewTabHeader = ({ navigation }) => ({
     color: '#03a9f3', // Text color
     fontSize: 18, // Font size
   },
+  headerTitle: '', 
   headerLeft: () => (
     <TouchableOpacity
       onPress={() => {

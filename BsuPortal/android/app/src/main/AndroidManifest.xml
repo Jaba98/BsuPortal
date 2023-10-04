@@ -39,10 +39,6 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="mailto" />
             </intent-filter>
-             <meta-data
-           android:name="com.dieam.reactnativepushnotification.notification_small_icon"
-           android:resource="@mipmap/ic_launcher_round"
-         />
         </activity>
     </application>
 </manifest>
