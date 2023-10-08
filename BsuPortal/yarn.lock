@@ -6109,6 +6109,11 @@ react-is@^17.0.1:
   resolved "https://registry.npmjs.org/react-is/-/react-is-17.0.2.tgz"
   integrity sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==
 
+react-native-browser@^0.6.2:
+  version "0.6.2"
+  resolved "https://registry.npmjs.org/react-native-browser/-/react-native-browser-0.6.2.tgz"
+  integrity sha512-oRe5MtWEXhQRAsXUQcodBQe9v3YxIC3noYhNLh4KFvJ8Kt9nZiucf3AIpVrn8Qyn+UCinmEjNbu0gcO2tzoihQ==
+
 react-native-document-picker@^9.0.1:
   version "9.0.1"
   resolved "https://registry.npmjs.org/react-native-document-picker/-/react-native-document-picker-9.0.1.tgz"
@@ -6223,7 +6228,7 @@ react-native-webview@^13.6.0:
     escape-string-regexp "2.0.0"
     invariant "2.2.4"
 
-react-native@*, react-native@^0.72.4, react-native@>=0.33, react-native@>=0.42.0, react-native@>=0.56, react-native@>=0.57, react-native@>=0.58.4, react-native@>=0.59, react-native@>=0.60.0, react-native@>=0.63.3:
+react-native@*, react-native@^0.72.4, react-native@>=0.14, react-native@>=0.33, react-native@>=0.42.0, react-native@>=0.56, react-native@>=0.57, react-native@>=0.58.4, react-native@>=0.59, react-native@>=0.60.0, react-native@>=0.63.3:
   version "0.72.4"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.72.4.tgz"
   integrity sha512-+vrObi0wZR+NeqL09KihAAdVlQ9IdplwznJWtYrjnQ4UbCW6rkzZJebRsugwUneSOKNFaHFEo1uKU89HsgtYBg==

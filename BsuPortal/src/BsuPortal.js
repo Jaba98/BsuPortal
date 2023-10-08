@@ -4,28 +4,15 @@ import { WebView} from 'react-native-webview';
 import SplashScreen from './SplashScreen';
 import NetInfo from '@react-native-community/netinfo';
 import RNFetchBlob from 'rn-fetch-blob';
-import PushNotification from 'react-native-push-notification'; // for Android and iOS
 import { ToastAndroid } from 'react-native';
-import { useNavigation,useRoute, } from '@react-navigation/native';
-import { PermissionsAndroid, Platform } from 'react-native';
-import RNFS from 'react-native-fs';
-import axios from 'axios';
-import blobToBase64 from 'blob-to-base64';
-
-
-
+import InAppBrowser from 'react-native-inappbrowser-reborn';
 
 const BsuPortal = () => {
   const [showSplashScreen, setShowSplashScreen] = useState(true); 
   const webViewRef = useRef(null);
-  const [newUrl, setNewUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
   const [originalUrl, setOriginalUrl] = useState('https://portal.bsu.edu.ge/'); // Track the original URL
-  const navigation = useNavigation(); // Use useNavigation inside the functional component
-  const route = useRoute(); // Use useRoute to access route params
-  
-
   // --- useEffect ტექნიკის დაბრუნების ღილაკის დასამუშავებლად---
   useEffect(() => {
 
@@ -64,11 +51,11 @@ const BsuPortal = () => {
       if (!state.isConnected) {
         console.log('No Internet. Showing error message.');
         Alert.alert(
-          'No Internet Connection',
-          'Please check your internet connection and try again.',
+          'Არ არის ინტერნეტ კავშირი',
+          'გთხოვთ, შეამოწმოთ თქვენი ინტერნეტ კავშირი და სცადოთ ხელახლა.',
           [
             {
-              text: 'Refresh',
+              text: 'განახლება',
               onPress: () => {
                 webViewRef.current.reload();
               },
@@ -97,7 +84,7 @@ const BsuPortal = () => {
           const config = {
             fileCache: true,
           };
-        
+          
           ToastAndroid.show('მიმდინარეობს ფაილის გადმოწერა...', ToastAndroid.SHORT);
           // Start the download
           RNFetchBlob.config(config)
@@ -220,6 +207,13 @@ const BsuPortal = () => {
 
                 onNavigationStateChange={(navState) => {
                   handleWebViewNavigation(navState);
+                  const { url } = navState;
+ 
+                  // Check if the URL contains "downloads"
+                  if (url.includes('downloads')) {
+                    // Perform your desired action here
+                    Alert.alert('URL შეიცავს "ჩამოტვირთვებს"', 'Perform actions in React Native');
+                  }
 
                 }}
                 
@@ -227,14 +221,25 @@ const BsuPortal = () => {
               onShouldStartLoadWithRequest={(event) => {
                 const { url } = event;
             
-                 // Check if the URL starts with 'https://portal.bsu'
-                 if (!url.startsWith('https://portal.bsu')) {
-                   console.log('Blocked navigation to URL:', url);
-                  // Check if the URL starts with 'https://portal.bsu'
-                   navigation.navigate('იტვირთება...', { redirectedUrl: url });
-                   console.log('open NewTab');
-                   return false; // Block navigation for URLs that do not start with 'https://portal.bsu'
-                 }
+                       if (!url.startsWith('https://portal.bsu')) {
+                       console.log('Blocked navigation to URL:', url);                   
+
+                       // Open the redirected URL in the InAppBrowser without using 'await'
+                       InAppBrowser.open(url, {
+                        toolbarColor: '#03a9f3',
+                        showTitle: false,
+                        addShareButton: false, // Add a share button
+                        // Other InAppBrowser configuration options can be added here
+                      })
+                        .then((result) => {
+                          console.log(result);
+                        })
+                        .catch((error) => {
+                          console.error(error.message);
+                        });
+
+                       return false; // Block navigation for URLs that do not start with 'https://portal.bsu'
+                     }                   
 
                 // Check if the URL contains the download.php key
                 if (url.includes('Download.php?Key=')) {

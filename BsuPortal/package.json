@@ -19,6 +19,7 @@
     "blob-to-base64": "^1.0.2",
     "react": "18.2.0",
     "react-native": "^0.72.4",
+    "react-native-browser": "^0.6.2",
     "react-native-document-picker": "^9.0.1",
     "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.13.1",
