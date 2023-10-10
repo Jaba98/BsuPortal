@@ -13,6 +13,7 @@ const BsuPortal = () => {
   const [loading, setLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
   const [originalUrl, setOriginalUrl] = useState('https://portal.bsu.edu.ge/'); // Track the original URL
+  
   // --- useEffect ტექნიკის დაბრუნების ღილაკის დასამუშავებლად---
   useEffect(() => {
 
@@ -76,76 +77,70 @@ const BsuPortal = () => {
         const handleWebViewNavigation = (event) => {
              const { url, navigationType } = event;
              console.log(`URL: ${url}, Navigation Type: ${navigationType}`);
-             
-
+            
         }
         const downloadFile = (url) => {
-          // Set up the config for the file download
           const config = {
             fileCache: true,
           };
-          
-          ToastAndroid.show('მიმდინარეობს ფაილის გადმოწერა...', ToastAndroid.SHORT);
-          // Start the download
+        
+          ToastAndroid.show('მიმდინარეობს ფაილის ჩამოტვირთვა...', ToastAndroid.SHORT);
+        
           RNFetchBlob.config(config)
             .fetch('GET', url)
             .then((res) => {
-              // Get the content type from response headers
-              const contentType = res.respInfo.headers['Content-Type'];
+              if (res.respInfo.status === 200) {
+                const contentType = res.respInfo.headers['Content-Type'];
         
-              // Get the content-disposition header if available, or use a timestamp-based name
-              let fileName = Date.now(); // Default to timestamp
-              const contentDisposition = res.respInfo.headers['Content-Disposition'];
-              if (contentDisposition) {
-                const match = /filename="(.+)"/.exec(contentDisposition);
-                if (match) {
-                  fileName = match[1];
+                let fileName = Date.now();
+                const contentDisposition = res.respInfo.headers['Content-Disposition'];
+                if (contentDisposition) {
+                  const match = /filename="(.+)"/.exec(contentDisposition);
+                  if (match) {
+                    fileName = match[1];
+                  }
                 }
-              }
         
-              // Check if contentType is defined and not null before accessing 'includes'
-              if (contentType && contentType.includes) {
-                // Append an appropriate file extension based on content type
-                if (contentType.includes('pdf')) {
-                  fileName += '.pdf';
-                } else if (contentType.includes('xlsx')) {
-                  fileName += '.xlsx';
-                } else if (contentType.includes('xls')) {
-                  fileName += '.xls';
-                } else if (contentType.includes('docx')) {
-                  fileName += '.docx';
-                } else if (contentType.includes('doc')) {
-                  fileName += '.doc';
+                if (contentType && contentType.includes) {
+                  // Append an appropriate file extension based on content type
+                  // (add your extension mapping logic here)
+                } else {
+                  console.error('Content-Type is undefined or null:', contentType);
+                  throw new Error('Invalid content type');
                 }
-              } else {
-                console.error('Content-Type is undefined or null:', contentType);
-                return; // Exit the function if contentType is undefined or null
-              }
         
-              // Move the downloaded file to the appropriate location with the correct name
-              RNFetchBlob.fs
-                .mv(res.path(), `${RNFetchBlob.fs.dirs.DownloadDir}/${fileName}`)
-                .then(() => {
-                  console.log('File downloaded to:', `${RNFetchBlob.fs.dirs.DownloadDir}/${fileName}`);
+                const destinationPath = `${RNFetchBlob.fs.dirs.DownloadDir}/${fileName}`;
         
-                  // Use 'fileName' in the addCompleteDownload function
-                  RNFetchBlob.android.addCompleteDownload({
-                    title: `${fileName}`,
-                    description: 'Download complete',
-                    mime: 'application/*',
-                    path: `${RNFetchBlob.fs.dirs.DownloadDir}/${fileName}`,
-                    showNotification: true,
+                RNFetchBlob.fs
+                  .mv(res.path(), destinationPath)
+                  .then(() => {
+                    console.log('File downloaded to:', destinationPath);
+        
+                    RNFetchBlob.android.addCompleteDownload({
+                      title: `${fileName}`,
+                      description: 'Download complete',
+                      mime: 'application/*',
+                      path: destinationPath,
+                      showNotification: true,
+                    });
+        
+                    ToastAndroid.show('ჩამოტვირთვა დასრულდა!', ToastAndroid.SHORT);
+                  })
+                  .catch((error) => {
+                    console.error('Error moving file:', error);
+                    ToastAndroid.show('Error moving file', ToastAndroid.SHORT);
                   });
-                  ToastAndroid.show('ჩამოტვირთვა დასრულდა!', ToastAndroid.SHORT);
-                })
-                .catch((error) => {
-                  console.error('Error moving file:', error);
-                });
+              } else {
+                console.error('Failed to download file. Status:', res.respInfo.status);
+                throw new Error('Failed to download file');
+              }
             })
             .catch((error) => {
-              console.error('Error downloading file:', error);
+              console.error('Error downloading file:', error.message);
+              ToastAndroid.show('Error downloading file', ToastAndroid.SHORT);
             });
         };
+        
         
         
    return (
@@ -217,29 +212,45 @@ const BsuPortal = () => {
 
                 }}
                 
-                
               onShouldStartLoadWithRequest={(event) => {
                 const { url } = event;
-            
-                       if (!url.startsWith('https://portal.bsu')) {
-                       console.log('Blocked navigation to URL:', url);                   
-
-                       // Open the redirected URL in the InAppBrowser without using 'await'
-                       InAppBrowser.open(url, {
-                        toolbarColor: '#03a9f3',
-                        showTitle: false,
-                        addShareButton: false, // Add a share button
-                        // Other InAppBrowser configuration options can be added here
-                      })
-                        .then((result) => {
-                          console.log(result);
-                        })
-                        .catch((error) => {
-                          console.error(error.message);
-                        });
-
-                       return false; // Block navigation for URLs that do not start with 'https://portal.bsu'
-                     }                   
+                if (!url.startsWith('https://portal.bsu')) {
+                  console.log('Blocked navigation to URL:', url);
+              
+                  // Add a log before opening InAppBrowser
+                  console.log('Opening InAppBrowser for URL:', url);
+              
+                  // Open the redirected URL in the InAppBrowser without using 'await'
+                  InAppBrowser.open(url, {
+                      // Customize your InAppBrowser options here
+                       toolbarColor: '#03a9f3',
+                       readerMode: false,
+                       animated: true,
+                       modalPresentationStyle: 'overFullScreen',
+                       modalTransitionStyle: 'coverVertical',
+                       modalEnabled: true,
+                       enableBarCollapsing: false,
+                       // Android Properties
+                       showTitle: true,
+                       enableUrlBarHiding: true,
+                       enableDefaultShare: false,
+                       forceCloseOnRedirection: false,
+                       // iOS-specific option to open in the WebView
+                       usewkwebview: true, // Add this line to open in WebView on iOS
+                      
+                  })
+                    .then((result) => {
+                      
+                      // Add a log after opening InAppBrowser
+                      console.log('InAppBrowser opened successfully:', result);
+                    })
+                    .catch((error) => {
+                      // Add a log for any errors
+                      console.error('Error opening InAppBrowser:', error.message);
+                    });
+              
+                  return false; // Block navigation for URLs that do not start with 'https://portal.bsu'
+                }
 
                 // Check if the URL contains the download.php key
                 if (url.includes('Download.php?Key=')) {
@@ -247,7 +258,10 @@ const BsuPortal = () => {
                   return false; // Return false to cancel the WebView navigation
                 }
                  // Check if the URL ends with a common file extension (e.g., PDF, Excel, Word)
-                 const fileExtensions = ['.pdf', 'pdf', '.xlsx', 'xlsx', '.xls', 'xls', '.doc', 'doc', '.docx', 'docx','zip','rar','RAR'];
+                 const fileExtensions = [
+                  '.pdf', 'pdf', '.xlsx', 'xlsx', '.xls', 'xls', '.doc', 'doc', '.docx', 'docx', '.zip', '.rar', '.RAR',
+                  '.ppt', 'ppt', '.pptx', 'pptx',
+                ];
                  const lowercaseUrl = url.toLowerCase();
                  const hasValidExtension = fileExtensions.some(extension => lowercaseUrl.endsWith(extension));
                   
