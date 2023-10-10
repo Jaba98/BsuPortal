@@ -1862,6 +1862,16 @@
     invariant "^2.2.4"
     nullthrows "^1.1.1"
 
+"@react-navigation/core@^3.5.2":
+  version "3.7.9"
+  resolved "https://registry.npmjs.org/@react-navigation/core/-/core-3.7.9.tgz"
+  integrity sha512-EknbzM8OI9A5alRxXtQRV5Awle68B+z1QAxNty5DxmlS3BNfmduWNGnim159ROyqxkuDffK9L/U/Tbd45mx+Jg==
+  dependencies:
+    hoist-non-react-statics "^3.3.2"
+    path-to-regexp "^1.8.0"
+    query-string "^6.13.6"
+    react-is "^16.13.0"
+
 "@react-navigation/core@^6.4.9":
   version "6.4.9"
   resolved "https://registry.npmjs.org/@react-navigation/core/-/core-6.4.9.tgz"
@@ -1886,6 +1896,14 @@
   dependencies:
     color "^4.2.3"
     warn-once "^0.1.0"
+
+"@react-navigation/native@^3.6.5":
+  version "3.8.4"
+  resolved "https://registry.npmjs.org/@react-navigation/native/-/native-3.8.4.tgz"
+  integrity sha512-gXSVcL7bfFDyVkvyg1FiAqTCIgZub5K1X/TZqURBs2CPqDpfX1OsCtB9D33eTF14SpbfgHW866btqrrxoCACfg==
+  dependencies:
+    hoist-non-react-statics "^3.3.2"
+    react-native-safe-area-view "^0.14.9"
 
 "@react-navigation/native@^6.0.0", "@react-navigation/native@^6.1.8":
   version "6.1.8"
@@ -2683,7 +2701,7 @@ chalk@^2.4.2:
     escape-string-regexp "^1.0.5"
     supports-color "^5.3.0"
 
-chalk@^4.0.0:
+chalk@^4.0.0, chalk@^4.1.2:
   version "4.1.2"
   resolved "https://registry.npmjs.org/chalk/-/chalk-4.1.2.tgz"
   integrity sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==
@@ -2692,14 +2710,6 @@ chalk@^4.0.0:
     supports-color "^7.1.0"
 
 chalk@^4.1.0:
-  version "4.1.2"
-  resolved "https://registry.npmjs.org/chalk/-/chalk-4.1.2.tgz"
-  integrity sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==
-  dependencies:
-    ansi-styles "^4.1.0"
-    supports-color "^7.1.0"
-
-chalk@^4.1.2:
   version "4.1.2"
   resolved "https://registry.npmjs.org/chalk/-/chalk-4.1.2.tgz"
   integrity sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==
@@ -3010,7 +3020,7 @@ decamelize@^1.2.0:
   resolved "https://registry.npmjs.org/decamelize/-/decamelize-1.2.0.tgz"
   integrity sha512-z2S+W9X73hAUUki+N+9Za2lBlun89zigOyGrsax+KUQ6wKW4ZoWpEYBkGhQjwAjjDCkWxhY0VKEhk8wzY7F5cA==
 
-decode-uri-component@^0.2.2:
+decode-uri-component@^0.2.0, decode-uri-component@^0.2.2:
   version "0.2.2"
   resolved "https://registry.npmjs.org/decode-uri-component/-/decode-uri-component-0.2.2.tgz"
   integrity sha512-FqUYQ+8o158GyGTrMFJms9qh3CqTKvAqgqsTnkLI8sKu0028orqBhxNMFkFen0zGyg6epACD32pjVk58ngIErQ==
@@ -3958,7 +3968,12 @@ hermes-profile-transformer@^0.0.6:
   dependencies:
     source-map "^0.7.3"
 
-hoist-non-react-statics@^3.3.0:
+hoist-non-react-statics@^2.3.1:
+  version "2.5.5"
+  resolved "https://registry.npmjs.org/hoist-non-react-statics/-/hoist-non-react-statics-2.5.5.tgz"
+  integrity sha512-rqcy4pJo55FTTLWt+bU8ukscqHeE/e9KWvsOW2b/a3afxQZhwkQdT1rPPCJ0rYXdj4vNcasY8zHTH+jF/qStxw==
+
+hoist-non-react-statics@^3.3.0, hoist-non-react-statics@^3.3.2:
   version "3.3.2"
   resolved "https://registry.npmjs.org/hoist-non-react-statics/-/hoist-non-react-statics-3.3.2.tgz"
   integrity sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==
@@ -4301,6 +4316,11 @@ isarray@~1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/isarray/-/isarray-1.0.0.tgz"
   integrity sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==
+
+isarray@0.0.1:
+  version "0.0.1"
+  resolved "https://registry.npmjs.org/isarray/-/isarray-0.0.1.tgz"
+  integrity sha512-D2S+3GLxWH+uhrNEcoh/fnmYeP8E8/zHl644d/jdA0g2uyXvy3sb0qxotE+ne0LtccHknQzWwZEzhak7oJ0COQ==
 
 isexe@^2.0.0:
   version "2.0.0"
@@ -5946,6 +5966,13 @@ path-parse@^1.0.7:
   resolved "https://registry.npmjs.org/path-parse/-/path-parse-1.0.7.tgz"
   integrity sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==
 
+path-to-regexp@^1.8.0:
+  version "1.8.0"
+  resolved "https://registry.npmjs.org/path-to-regexp/-/path-to-regexp-1.8.0.tgz"
+  integrity sha512-n43JRhlUKUAlibEJhPeir1ncUID16QnEjNpwzNdO3Lm4ywrBpBZ5oLD0I6br9evr1Y9JTqwRtAh7JLoOzAQdVA==
+  dependencies:
+    isarray "0.0.1"
+
 path-type@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/path-type/-/path-type-4.0.0.tgz"
@@ -6075,6 +6102,16 @@ pure-rand@^6.0.0:
   resolved "https://registry.npmjs.org/pure-rand/-/pure-rand-6.0.4.tgz"
   integrity sha512-LA0Y9kxMYv47GIPJy6MI84fqTd2HmYZI83W/kM/SkKfDlajnZYfmXFTxkbY+xSBPkLJxltMa9hIkmdc29eguMA==
 
+query-string@^6.13.6:
+  version "6.14.1"
+  resolved "https://registry.npmjs.org/query-string/-/query-string-6.14.1.tgz"
+  integrity sha512-XDxAeVmpfu1/6IjyT/gXHOl+S0vQ9owggJ30hhWKdHAsNPOcasn5o9BW0eejZqL2e4vMjhAxoW3jVHcD6mbcYw==
+  dependencies:
+    decode-uri-component "^0.2.0"
+    filter-obj "^1.1.0"
+    split-on-first "^1.0.0"
+    strict-uri-encode "^2.0.0"
+
 query-string@^7.1.3:
   version "7.1.3"
   resolved "https://registry.npmjs.org/query-string/-/query-string-7.1.3.tgz"
@@ -6135,10 +6172,10 @@ react-is@^18.2.0:
   resolved "https://registry.npmjs.org/react-is/-/react-is-18.2.0.tgz"
   integrity sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==
 
-react-native-browser@^0.6.2:
-  version "0.6.2"
-  resolved "https://registry.npmjs.org/react-native-browser/-/react-native-browser-0.6.2.tgz"
-  integrity sha512-oRe5MtWEXhQRAsXUQcodBQe9v3YxIC3noYhNLh4KFvJ8Kt9nZiucf3AIpVrn8Qyn+UCinmEjNbu0gcO2tzoihQ==
+react-native-custom-tabs@^0.1.7:
+  version "0.1.7"
+  resolved "https://registry.npmjs.org/react-native-custom-tabs/-/react-native-custom-tabs-0.1.7.tgz"
+  integrity sha512-Lgxh/KvhRnirnvN9FrS/+FJ8OIKJcWGdceSrZutZt2x02Sc72uQVD1O4rh2kzN8NUw8yU6KQz279ltkicISbaw==
 
 react-native-document-picker@^9.0.1:
   version "9.0.1"
@@ -6216,6 +6253,13 @@ react-native-safe-area-context@^4.7.2, "react-native-safe-area-context@>= 0.6.0"
   resolved "https://registry.npmjs.org/react-native-safe-area-context/-/react-native-safe-area-context-4.7.2.tgz"
   integrity sha512-5fy/hRNJ7bI/U2SliOeKf0D80J4lXPc1NsRiNS7Xaz8YTnqlzWib1ViItkwKPfufe54YKzVBMmM32RpdzvO2gg==
 
+react-native-safe-area-view@^0.14.9:
+  version "0.14.9"
+  resolved "https://registry.npmjs.org/react-native-safe-area-view/-/react-native-safe-area-view-0.14.9.tgz"
+  integrity sha512-WII/ulhpVyL/qbYb7vydq7dJAfZRBcEhg4/UWt6F6nAKpLa3gAceMOxBxI914ppwSP/TdUsandFy6lkJQE0z4A==
+  dependencies:
+    hoist-non-react-statics "^2.3.1"
+
 react-native-screens@^3.25.0, "react-native-screens@>= 3.0.0", "react-native-screens@>=1.0.0 || >= 2.0.0-alpha.0 || >= 2.0.0-beta.0 || >= 2.0.0":
   version "3.25.0"
   resolved "https://registry.npmjs.org/react-native-screens/-/react-native-screens-3.25.0.tgz"
@@ -6247,7 +6291,7 @@ react-native-webview@^13.6.0:
     escape-string-regexp "2.0.0"
     invariant "2.2.4"
 
-react-native@*, react-native@^0.72.4, react-native@>=0.14, react-native@>=0.33, react-native@>=0.42.0, react-native@>=0.56, react-native@>=0.57, react-native@>=0.58.4, react-native@>=0.59, react-native@>=0.60.0, react-native@>=0.63.3:
+react-native@*, react-native@^0.72.4, react-native@>=0.33, react-native@>=0.42.0, react-native@>=0.56, react-native@>=0.57, react-native@>=0.58.4, react-native@>=0.59, react-native@>=0.60.0, react-native@>=0.63.3:
   version "0.72.5"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.72.5.tgz"
   integrity sha512-oIewslu5DBwOmo7x5rdzZlZXCqDIna0R4dUwVpfmVteORYLr4yaZo5wQnMeR+H7x54GaMhmgeqp0ZpULtulJFg==
@@ -6297,10 +6341,13 @@ react-navigation-stack@^2.10.4:
     color "^3.1.3"
     react-native-iphone-x-helper "^1.3.0"
 
-react-navigation@^4.1.1, react-navigation@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.npmjs.org/react-navigation/-/react-navigation-5.0.0.tgz"
-  integrity sha512-ACTzjc4L1ik7rJ092ZhIELBJ/pnoLgRIqWHSKcYcaBASxyjJCgBEDIV5s585HBj55tw25YwNdlj3+d4B4MYWDg==
+react-navigation@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.npmjs.org/react-navigation/-/react-navigation-4.1.1.tgz"
+  integrity sha512-HEzPOsndrKnxTf0+gsi1N/0GKbwu8KSTOveL7ptJLG7XNXHBXVvp4lbaS3PVPe2IaiXbXCC+y3VJ8dH50wHR4g==
+  dependencies:
+    "@react-navigation/core" "^3.5.2"
+    "@react-navigation/native" "^3.6.5"
 
 react-refresh@^0.14.0:
   version "0.14.0"
