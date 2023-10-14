@@ -23,7 +23,7 @@ const NewTabHeader = ({ navigation }) => ({
       }}
       style={{ marginLeft: 15 }}
     >
-      <Image source={require('../image/Close_ic.png')} style={{ width: 18, height: 18 }} />
+      <Image source={require('../image/Close_ic.png')} style={{ width: 16, height: 16 }} />
     </TouchableOpacity>
   ),
 });
@@ -39,7 +39,7 @@ function AppNavigator() {
           options={{ headerShown: false }} // Hide the header for the Home screen
         />
          <Stack.Screen
-          name="იტვირთება..."
+          name="NewTab"
           component={NewTab}
           options={NewTabHeader} // Use NewTabHeader as options for the "NewTab" screen
          />

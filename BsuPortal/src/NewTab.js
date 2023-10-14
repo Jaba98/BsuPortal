@@ -1,9 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, BackHandler, Text, ProgressBarAndroid,ProgressViewIOS, Platform, } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { ToastAndroid } from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob';
-import { Linking } from 'react-native';
+import { downloadFile } from './DownloadFile';
 
 
 const NewTab = ({ route, navigation }) => {
@@ -16,20 +14,18 @@ const NewTab = ({ route, navigation }) => {
   const [progress, setProgress] = useState(0); // Add a state variable for progress
   const [showProgressBar, setShowProgressBar] = useState(true); // Initially set to true
 
-  const webViewJS = `
-  (function() {
-    document.addEventListener('click', function(e) {
-      if (e.target && e.target.tagName === 'A' && e.target.href) {
-        // Check if the clicked link is a download link (e.g., PDF, ZIP, etc.)
-        if (e.target.download) {
-          // Handle the download link here, for example, by sending it to your app's native module.
+    const webViewJS = `
+    (function() {
+      document.addEventListener('click', function(e) {
+        if (e.target && e.target.tagName === 'A' && e.target.href) {
+          // Check if the clicked link is a download link (e.g., PDF, ZIP, etc.)
+          if (e.target.download) {
+            // Handle the download link here, for example, by sending it to your app's native module.
+          }
         }
-      }
-    });
-  })();
-`;
-
-
+      });
+    })();
+  `;
   const extractDomain = (url) => {
     let domain = url;
     if (url.indexOf('://') > -1) {
@@ -66,47 +62,7 @@ const NewTab = ({ route, navigation }) => {
     // Continue with your code to load the URL
     return true;
   };
-
-  const downloadFile = (url) => {
-    // Set up the config for the file download
-    const config = {
-      fileCache: true,
-    };
   
-    ToastAndroid.show('მიმდინარეობს ფაილის გადმოწერა...', ToastAndroid.SHORT);
-    // Start the download
-    RNFetchBlob.config(config)
-      .fetch('GET', url)
-      .then((res) => {
-        // Get the file name from the URL
-        const fileName = url.split('/').pop();
-  
-        // Move the downloaded file to the appropriate location with the correct name
-        RNFetchBlob.fs
-          .mv(res.path(), `${RNFetchBlob.fs.dirs.DownloadDir}/${fileName}`)
-          .then(() => {
-            console.log('File downloaded to:', `${RNFetchBlob.fs.dirs.DownloadDir}/${fileName}`);
-  
-            // Use 'fileName' in the addCompleteDownload function
-            RNFetchBlob.android.addCompleteDownload({
-              title: `${fileName}`,
-              description: 'Download complete',
-              mime: 'application/*',
-              path: `${RNFetchBlob.fs.dirs.DownloadDir}/${fileName}`,
-              showNotification: true,
-            });
-            ToastAndroid.show('ჩამოტვირთვა დასრულდა!', ToastAndroid.SHORT);
-          })
-          .catch((error) => {
-            console.error('Error moving file:', error);
-          });
-      })
-      .catch((error) => {
-        console.error('Error downloading file:', error);
-      });
-  };
-  
-
   return (
     <View style={styles.container}>
         {/* Conditionally render the progress bar based on visibility */}
@@ -119,11 +75,13 @@ const NewTab = ({ route, navigation }) => {
               indeterminate={false}
               progress={progress}
               color="#03a9f3" // Change the color of the progress bar
+              style={{ height: 2.5}} // Adjust the height to make the line thinner
             />
           ) : (
             <ProgressViewIOS
               progress={progress}
               progressTintColor="#03a9f3"
+              style={{ height: 2.5 }} // Adjust the height to make the line thinner
             />
           )}
         </View>
@@ -161,7 +119,7 @@ const NewTab = ({ route, navigation }) => {
           // Render a custom header title with yellow text color
           navigation.setOptions({
             headerTitle: () => (
-              <Text style={{ color: '#03a9f3', fontSize: 18, textAlign: 'center' }}>
+              <Text style={{ color: '#03a9f3', fontSize: 16, textAlign: 'center' }}>
                 {domain || redirectedUrl}
               </Text>
             ),

@@ -3,9 +3,9 @@ import { AppRegistry,StyleSheet,View,StatusBar,BackHandler,Text,Alert,Linking,Sa
 import { WebView} from 'react-native-webview';
 import SplashScreen from './SplashScreen';
 import NetInfo from '@react-native-community/netinfo';
-import RNFetchBlob from 'rn-fetch-blob';
-import { ToastAndroid } from 'react-native';
 import { useNavigation,useRoute, } from '@react-navigation/native';
+import { downloadFile } from './DownloadFile';
+
 const BsuPortal = () => {
   const [showSplashScreen, setShowSplashScreen] = useState(true); 
   const webViewRef = useRef(null);
@@ -13,6 +13,8 @@ const BsuPortal = () => {
   const [isConnected, setIsConnected] = useState(true);
   const [originalUrl, setOriginalUrl] = useState('https://portal.bsu.edu.ge/'); // Track the original URL
   const navigation = useNavigation(); // Use useNavigation inside the functional component
+  const [downloadMessages, setDownloadMessages] = useState([]);
+
   
   // --- useEffect ტექნიკის დაბრუნების ღილაკის დასამუშავებლად---
   useEffect(() => {
@@ -78,78 +80,11 @@ const BsuPortal = () => {
              console.log(`URL: ${url}, Navigation Type: ${navigationType}`);
             
         }
-        const downloadFile = (url) => {
-          // Set up the config for the file download
-          const config = {
-            fileCache: true,
-          };
-        
-          ToastAndroid.show('მიმდინარეობს ფაილის გადმოწერა...', ToastAndroid.SHORT);
-          // Start the download
-          RNFetchBlob.config(config)
-            .fetch('GET', url)
-            .then((res) => {
-              // Get the content type from response headers
-              const contentType = res.respInfo.headers['Content-Type'];
-        
-              // Get the content-disposition header if available, or use a timestamp-based name
-              let fileName = Date.now(); // Default to timestamp
-              const contentDisposition = res.respInfo.headers['Content-Disposition'];
-              if (contentDisposition) {
-                const match = /filename="(.+)"/.exec(contentDisposition);
-                if (match) {
-                  fileName = match[1];
-                }
-              }
-        
-              // Check if contentType is defined and not null before accessing 'includes'
-              if (contentType && contentType.includes) {
-                // Append an appropriate file extension based on content type
-                if (contentType.includes('pdf')) {
-                  fileName += '.pdf';
-                } else if (contentType.includes('xlsx')) {
-                  fileName += '.xlsx';
-                } else if (contentType.includes('xls')) {
-                  fileName += '.xls';
-                } else if (contentType.includes('docx')) {
-                  fileName += '.docx';
-                } else if (contentType.includes('doc')) {
-                  fileName += '.doc';
-                }
-              } else {
-                console.error('Content-Type is undefined or null:', contentType);
-                return; // Exit the function if contentType is undefined or null
-              }
-        
-              // Move the downloaded file to the appropriate location with the correct name
-              RNFetchBlob.fs
-                .mv(res.path(), `${RNFetchBlob.fs.dirs.DownloadDir}/${fileName}`)
-                .then(() => {
-                  console.log('File downloaded to:', `${RNFetchBlob.fs.dirs.DownloadDir}/${fileName}`);
-        
-                  // Use 'fileName' in the addCompleteDownload function
-                  RNFetchBlob.android.addCompleteDownload({
-                    title: `${fileName}`,
-                    description: 'Download complete',
-                    mime: 'application/*',
-                    path: `${RNFetchBlob.fs.dirs.DownloadDir}/${fileName}`,
-                    showNotification: true,
-                  });
-                  ToastAndroid.show('ჩამოტვირთვა დასრულდა!', ToastAndroid.SHORT);
-                })
-                .catch((error) => {
-                  console.error('Error moving file:', error);
-                });
-            })
-            .catch((error) => {
-              console.error('Error downloading file:', error);
-            });
-        };
+      
         
    return (
     <SafeAreaView style={styles.container}>
-            <StatusBar backgroundColor="#03a9f3" barStyle="dark-content" />
-
+       <StatusBar backgroundColor="#03a9f3" barStyle="dark-content" />
       {showSplashScreen ? (
         <View style={styles.splashContainer}>
           <StatusBar backgroundColor="#ffffff" barStyle="dark-content" />
@@ -220,10 +155,7 @@ const BsuPortal = () => {
                 const { url } = event;
                 if (!url.startsWith('https://portal.bsu')) {
                   console.log('Blocked navigation to URL:', url);
-                  // Check if the URL starts with 'https://portal.bsu'
-                   navigation.navigate('იტვირთება...', { redirectedUrl: url });
-                   console.log('open NewTab');
-          
+                  navigation.navigate('NewTab', { redirectedUrl: url });
                   return false; // Block navigation for URLs that do not start with 'https://portal.bsu'
                 }
 
@@ -231,7 +163,7 @@ const BsuPortal = () => {
                 if (url.includes('Download.php?Key=')) {
                   downloadFile(url);
                   return false; // Return false to cancel the WebView navigation
-                }
+                } 
                  // Check if the URL ends with a common file extension (e.g., PDF, Excel, Word)
                  const fileExtensions = [
                   '.pdf', 'pdf', '.xlsx', 'xlsx', '.xls', 'xls', '.doc', 'doc', '.docx', 'docx', '.zip', '.rar', '.RAR',
@@ -241,7 +173,7 @@ const BsuPortal = () => {
                  const hasValidExtension = fileExtensions.some(extension => lowercaseUrl.endsWith(extension));
                   
                   if (hasValidExtension) {
-                    // Handle the file download
+                   // Handle the file download
                     downloadFile(url);
                     return false; // Return false to cancel the WebView navigation
                   }
@@ -253,6 +185,7 @@ const BsuPortal = () => {
                /> 
              </>
            )}
+
     </SafeAreaView>
   );
 };
