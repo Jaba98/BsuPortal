@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AppRegistry,StyleSheet,View,StatusBar,BackHandler,Text,Alert,Linking,SafeAreaView} from 'react-native';
+import { AppRegistry,StyleSheet,View,StatusBar,BackHandler,Text,Alert,SafeAreaView} from 'react-native';
 import { WebView} from 'react-native-webview';
 import SplashScreen from './SplashScreen';
 import NetInfo from '@react-native-community/netinfo';
 import  openInAppBrowser  from './InappBrowser';
+import { downloadFile } from './DownloadFile';
+
 
 const BsuPortal = () => {
   const [showSplashScreen, setShowSplashScreen] = useState(true); 
@@ -11,6 +13,8 @@ const BsuPortal = () => {
   const [loading, setLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
   const [originalUrl, setOriginalUrl] = useState('https://portal.bsu.edu.ge/'); // Track the original URL
+  const [downloadMessages, setDownloadMessages] = useState([]);
+
   
   // --- useEffect ტექნიკის დაბრუნების ღილაკის დასამუშავებლად---
   useEffect(() => {
@@ -77,6 +81,7 @@ const BsuPortal = () => {
              console.log(`URL: ${url}, Navigation Type: ${navigationType}`);
             
         }
+
    return (
     <SafeAreaView style={styles.container}>
             <StatusBar backgroundColor="#03a9f3" barStyle="dark-content" />
@@ -138,27 +143,23 @@ const BsuPortal = () => {
                   handleWebViewNavigation(navState);
                   const { url } = navState;
 
+
                 }}
-                
+
               onShouldStartLoadWithRequest={(event) => {
-                const authorizedUrl = `${setOriginalUrl}authorize.php?url=${encodeURIComponent(url)}`;
                 const { url } = event;
-                console.log('onShouldStartLoadWithRequest URL:', url);
+                console.log('Download URL:', url);
                 if (!url.startsWith('https://portal.bsu')) {
                   console.log('Blocked navigation to URL:', url);
-                   // Open the redirected URL using the function from InAppBrowser.js
                   openInAppBrowser(url);
-                  console.log('Opening InAppBrowser for URL:', url);
-              
                   return false; // Block navigation for URLs that do not start with 'https://portal.bsu'
                 }
 
                 // Check if the URL contains the download.php key
-                if (url.includes('Download.php?Key=')) {
-                  console.log('Download.php:', url);
-                  openInAppBrowser(url);
+                if (url.includes('Download.php?Key=' )) {
+                  downloadFile(url);
                   return false; // Return false to cancel the WebView navigation
-                }
+                } 
                  // Check if the URL ends with a common file extension (e.g., PDF, Excel, Word)
                  const fileExtensions = [
                   '.pdf', 'pdf', '.xlsx', 'xlsx', '.xls', 'xls', '.doc', 'doc', '.docx', 'docx', '.zip', '.rar', '.RAR',
@@ -168,13 +169,15 @@ const BsuPortal = () => {
                  const hasValidExtension = fileExtensions.some(extension => lowercaseUrl.endsWith(extension));
                   
                   if (hasValidExtension) {
-                    // Handle the file download
-                    console.log('hasValidExtension:', url);
-                    openInAppBrowser(url);
+                   // Handle the file download
+                    downloadFile(url);
+                    return false; // Return false to cancel the WebView navigation
                   }
+                
                 // Allow other requests to load
                 return true;
               }}
+
 
                /> 
              </>

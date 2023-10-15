@@ -79,7 +79,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "2.3.0"
+        versionName "2.4.0"
     } 
     signingConfigs {
         release {
@@ -120,6 +120,9 @@ dependencies {
     implementation("com.facebook.react:react-android")
     
     implementation project(':react-native-inappbrowser-reborn')
+    implementation project(':react-native-fs')
+    implementation 'com.squareup.okhttp3:okhttp:3.4.1'
+
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
