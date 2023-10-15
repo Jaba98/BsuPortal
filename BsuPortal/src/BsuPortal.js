@@ -3,8 +3,7 @@ import { AppRegistry,StyleSheet,View,StatusBar,BackHandler,Text,Alert,Linking,Sa
 import { WebView} from 'react-native-webview';
 import SplashScreen from './SplashScreen';
 import NetInfo from '@react-native-community/netinfo';
-import { useNavigation,useRoute, } from '@react-navigation/native';
-import { downloadFile } from './DownloadFile';
+import  openInAppBrowser  from './InappBrowser';
 
 const BsuPortal = () => {
   const [showSplashScreen, setShowSplashScreen] = useState(true); 
@@ -12,12 +11,10 @@ const BsuPortal = () => {
   const [loading, setLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
   const [originalUrl, setOriginalUrl] = useState('https://portal.bsu.edu.ge/'); // Track the original URL
-  const navigation = useNavigation(); // Use useNavigation inside the functional component
-  const [downloadMessages, setDownloadMessages] = useState([]);
-
   
   // --- useEffect ტექნიკის დაბრუნების ღილაკის დასამუშავებლად---
   useEffect(() => {
+
     // უკანა ღილაკის დაჭერის ფუნქცია
     const backAction = () => {
       if (webViewRef.current) {
@@ -80,11 +77,10 @@ const BsuPortal = () => {
              console.log(`URL: ${url}, Navigation Type: ${navigationType}`);
             
         }
-      
-        
    return (
     <SafeAreaView style={styles.container}>
-       <StatusBar backgroundColor="#03a9f3" barStyle="dark-content" />
+            <StatusBar backgroundColor="#03a9f3" barStyle="dark-content" />
+
       {showSplashScreen ? (
         <View style={styles.splashContainer}>
           <StatusBar backgroundColor="#ffffff" barStyle="dark-content" />
@@ -123,7 +119,6 @@ const BsuPortal = () => {
              userAgent={
                'Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Mobile Safari/537.36'
              }
-             ignoreSslError={true}
              // გამორთეთ მხარდაჭერა მრავალი ფანჯრის ან ჩანართისთვის WebView-ში
              setSupportMultipleWindows={false}
              // ჩართეთ გაზიარებული ქუქიები მომხმარებლის სესიების შესანარჩუნებლად WebView-სა და აპს შორის
@@ -142,28 +137,28 @@ const BsuPortal = () => {
                 onNavigationStateChange={(navState) => {
                   handleWebViewNavigation(navState);
                   const { url } = navState;
- 
-                  // Check if the URL contains "downloads"
-                  if (url.includes('downloads')) {
-                    // Perform your desired action here
-                    Alert.alert('URL შეიცავს "ჩამოტვირთვებს"', 'Perform actions in React Native');
-                  }
 
                 }}
                 
               onShouldStartLoadWithRequest={(event) => {
+                const authorizedUrl = `${setOriginalUrl}authorize.php?url=${encodeURIComponent(url)}`;
                 const { url } = event;
+                console.log('onShouldStartLoadWithRequest URL:', url);
                 if (!url.startsWith('https://portal.bsu')) {
                   console.log('Blocked navigation to URL:', url);
-                  navigation.navigate('NewTab', { redirectedUrl: url });
+                   // Open the redirected URL using the function from InAppBrowser.js
+                  openInAppBrowser(url);
+                  console.log('Opening InAppBrowser for URL:', url);
+              
                   return false; // Block navigation for URLs that do not start with 'https://portal.bsu'
                 }
 
                 // Check if the URL contains the download.php key
                 if (url.includes('Download.php?Key=')) {
-                  downloadFile(url);
+                  console.log('Download.php:', url);
+                  openInAppBrowser(url);
                   return false; // Return false to cancel the WebView navigation
-                } 
+                }
                  // Check if the URL ends with a common file extension (e.g., PDF, Excel, Word)
                  const fileExtensions = [
                   '.pdf', 'pdf', '.xlsx', 'xlsx', '.xls', 'xls', '.doc', 'doc', '.docx', 'docx', '.zip', '.rar', '.RAR',
@@ -173,11 +168,10 @@ const BsuPortal = () => {
                  const hasValidExtension = fileExtensions.some(extension => lowercaseUrl.endsWith(extension));
                   
                   if (hasValidExtension) {
-                   // Handle the file download
-                    downloadFile(url);
-                    return false; // Return false to cancel the WebView navigation
+                    // Handle the file download
+                    console.log('hasValidExtension:', url);
+                    openInAppBrowser(url);
                   }
-                
                 // Allow other requests to load
                 return true;
               }}
@@ -185,7 +179,6 @@ const BsuPortal = () => {
                /> 
              </>
            )}
-
     </SafeAreaView>
   );
 };
