@@ -13,7 +13,6 @@ const BsuPortal = () => {
   const [loading, setLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
   const [originalUrl, setOriginalUrl] = useState('https://portal.bsu.edu.ge/'); // Track the original URL
-  const [downloadMessages, setDownloadMessages] = useState([]);
 
   
   // --- useEffect ტექნიკის დაბრუნების ღილაკის დასამუშავებლად---
@@ -141,9 +140,6 @@ const BsuPortal = () => {
 
                 onNavigationStateChange={(navState) => {
                   handleWebViewNavigation(navState);
-                  const { url } = navState;
-
-
                 }}
 
               onShouldStartLoadWithRequest={(event) => {
@@ -177,8 +173,6 @@ const BsuPortal = () => {
                 // Allow other requests to load
                 return true;
               }}
-
-
                /> 
              </>
            )}

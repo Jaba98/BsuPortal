@@ -8,7 +8,7 @@ export const openInAppBrowser = async (url) => {
       const result = await InAppBrowser.open(url, {
         // iOS Properties
         dismissButtonStyle: 'cancel',
-        preferredBarTintColor: 'blue',
+        preferredBarTintColor: '#03a9f3',
         preferredControlTintColor: 'white',
         readerMode: false,
         animated: true,
@@ -18,13 +18,14 @@ export const openInAppBrowser = async (url) => {
         enableBarCollapsing: false,
         // Android Properties
         showTitle: true,
-        toolbarColor: 'blue',
+        toolbarColor: '#03a9f3',
         secondaryToolbarColor: 'black',
         navigationBarColor: 'black',
         navigationBarDividerColor: 'white',
         enableUrlBarHiding: true,
         enableDefaultShare: false,
         forceCloseOnRedirection: false,
+        showInRecents: true,
         animated: true,
         // Specify animation resources
         animations: {
@@ -43,5 +44,4 @@ export const openInAppBrowser = async (url) => {
     console.error('Error opening InAppBrowser:', error.message);
   }
 };
-
 export default openInAppBrowser;
