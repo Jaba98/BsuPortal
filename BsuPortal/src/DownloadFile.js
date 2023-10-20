@@ -1,27 +1,10 @@
 import RNFetchBlob from 'rn-fetch-blob';
-import { Platform, PermissionsAndroid, ToastAndroid } from 'react-native';
+import { Platform, ToastAndroid } from 'react-native';
 
 export const downloadFile = async (url) => {
   try {
     const { dirs } = RNFetchBlob.fs;
     const downloadDir = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
-
-    // Check for permission to write to external storage
-    const permissionStatus = await PermissionsAndroid.check(
-      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
-    );
-
-    if (permissionStatus !== PermissionsAndroid.RESULTS.GRANTED) {
-      const requestResult = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
-      );
-
-      if (requestResult !== PermissionsAndroid.RESULTS.GRANTED) {
-        ToastAndroid.show('Permission denied. Cannot download the file.', ToastAndroid.LONG);
-        return;
-      }
-    }
-
     // Start the download
     ToastAndroid.show('მიმდინარეობს ფაილის გადმოწერა...', ToastAndroid.LONG);
     const res = await RNFetchBlob.config({ fileCache: true }).fetch('GET', url);
@@ -37,9 +20,9 @@ export const downloadFile = async (url) => {
     
       if (fileExists) {
         const contentDisposition = res.respInfo.headers['Content-Disposition'];
-        let fileName = Date.now() + '.unknown'; // Default to timestamp
+        let fileName = Date.now() + '.pdf'; // Default to timestamp
         let contentType = res.respInfo.headers['Content-Type'];
-    
+        
         if (contentDisposition) {
           const match = /filename="(.+)"/.exec(contentDisposition);
           if (match) {
@@ -66,7 +49,6 @@ export const downloadFile = async (url) => {
             fileName = fileName.replace(/\.[^.]+$/, `.${extension}`);
           }
         }
-    
         // Ensure the target directory exists
         const sanitizedFileName = fileName.replace(/[/\\?%*:|"<>]/g, ''); // Remove invalid characters
         const targetDir = downloadDir;
@@ -88,7 +70,7 @@ export const downloadFile = async (url) => {
           });
         } catch (error) {
           console.error('Error moving the file:', error);
-          ToastAndroid.show('An error occurred while moving the file.', ToastAndroid.LONG);
+          ToastAndroid.show('მოხდა შეცდომა ფაილის გადმოწერის დროს', ToastAndroid.LONG);
         }
       } else {
         console.error('Source file not found.');

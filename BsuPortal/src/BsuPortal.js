@@ -3,8 +3,9 @@ import { AppRegistry,StyleSheet,View,StatusBar,BackHandler,Text,Alert,SafeAreaVi
 import { WebView} from 'react-native-webview';
 import SplashScreen from './SplashScreen';
 import NetInfo from '@react-native-community/netinfo';
-import  openInAppBrowser  from './InappBrowser';
+import { useNavigation,useRoute, } from '@react-navigation/native';
 import { downloadFile } from './DownloadFile';
+
 
 
 const BsuPortal = () => {
@@ -12,9 +13,10 @@ const BsuPortal = () => {
   const webViewRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
+  const navigation = useNavigation(); // Use useNavigation inside the functional component
   const [originalUrl, setOriginalUrl] = useState('https://portal.bsu.edu.ge/'); // Track the original URL
-
   
+
   // --- useEffect ტექნიკის დაბრუნების ღილაკის დასამუშავებლად---
   useEffect(() => {
 
@@ -103,6 +105,17 @@ const BsuPortal = () => {
              // მიუთითეთ წყაროს URL WebView-ისთვის, გამოიყენეთ „newUrl“, თუ ეს შესაძლებელია, ან ნაგულისხმევი URL
              source={{ uri: originalUrl }} // Use the current URL in the WebView source
              style={styles.webView}
+             onError={(error) => {
+              if (error.nativeEvent.description === "ERR_INTERNET_DISCONNECTED") {
+                const injectedJS = `
+                  const body = document.body;
+                  if (body) {
+                    body.innerHTML = '<div style="text-align: center; font-size: 20px;">No Internet</div>';
+                  }
+                `;
+                webViewRef.current.injectJavaScript(injectedJS);
+              }
+            }}
              // ჩართეთ გადახვევა WebView-ში
              scrollEnabled={true}
              // ჩართეთ JavaScript-ის შესრულება WebView-ში
@@ -147,10 +160,10 @@ const BsuPortal = () => {
                 console.log('Download URL:', url);
                 if (!url.startsWith('https://portal.bsu')) {
                   console.log('Blocked navigation to URL:', url);
-                  openInAppBrowser(url);
+                  navigation.navigate('NewTab', { redirectedUrl: url });
                   return false; // Block navigation for URLs that do not start with 'https://portal.bsu'
                 }
-
+                
                 // Check if the URL contains the download.php key
                 if (url.includes('Download.php?Key=' )) {
                   downloadFile(url);
