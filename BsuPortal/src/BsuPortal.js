@@ -3,8 +3,8 @@ import { AppRegistry,StyleSheet,View,StatusBar,BackHandler,Text,Alert,SafeAreaVi
 import { WebView} from 'react-native-webview';
 import SplashScreen from './SplashScreen';
 import NetInfo from '@react-native-community/netinfo';
-import { useNavigation,useRoute, } from '@react-navigation/native';
 import { downloadFile } from './DownloadFile';
+import  openInAppBrowser  from './InappBrowser';
 
 
 
@@ -13,7 +13,6 @@ const BsuPortal = () => {
   const webViewRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
-  const navigation = useNavigation(); // Use useNavigation inside the functional component
   const [originalUrl, setOriginalUrl] = useState('https://portal.bsu.edu.ge/'); // Track the original URL
   
 
@@ -160,7 +159,7 @@ const BsuPortal = () => {
                 console.log('Download URL:', url);
                 if (!url.startsWith('https://portal.bsu')) {
                   console.log('Blocked navigation to URL:', url);
-                  navigation.navigate('NewTab', { redirectedUrl: url });
+                  openInAppBrowser(url);
                   return false; // Block navigation for URLs that do not start with 'https://portal.bsu'
                 }
                 

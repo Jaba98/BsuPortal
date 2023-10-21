@@ -1,10 +1,6 @@
 import { AppRegistry } from 'react-native';
-import MainApp from './App'; // Rename the imported component to MainApp
+import BsuPortal from './src/BsuPortal'; // Import the BsuPortal component
 import { name as appName } from './app.json';
-import AppNavigator from './src/AppNavigator';
 
-function BsuPortal() {
-  return <AppNavigator />;
-}
-
+// Register the BsuPortal component as the root component
 AppRegistry.registerComponent(appName, () => BsuPortal);
