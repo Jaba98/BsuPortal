@@ -5,7 +5,6 @@ import SplashScreen from './SplashScreen';
 import NetInfo from '@react-native-community/netinfo';
 import { downloadFile } from './DownloadFile';
 import  openInAppBrowser  from './InappBrowser';
-import { Button } from 'react-native';
 
 
 
@@ -17,6 +16,7 @@ const BsuPortal = () => {
   const [webViewError, setWebViewError] = useState(false);
   const [originalUrl, setOriginalUrl] = useState('https://portal.bsu.edu.ge/'); // Track the original URL
   
+
   // --- useEffect ტექნიკის დაბრუნების ღილაკის დასამუშავებლად---
   useEffect(() => {
 
@@ -26,10 +26,7 @@ const BsuPortal = () => {
         webViewRef.current.goBack();
         console.log('Hardware back button pressed. Navigating back in WebView.');
         return true;
-      }else if(!state.isConnected){
-        webViewRef.current.reload();
       }
-      
       return false;
     };
 
@@ -50,11 +47,10 @@ const BsuPortal = () => {
 
   // --- useEffect ინტერნეტ კავშირის მონიტორინგისთვის ---
   useEffect(() => {
-    // გამოიწერეთ ქსელის მდგომარეობის ცვლილებები
     const unsubscribe = NetInfo.addEventListener((state) => {
       console.log('Internet connectivity status changed:', state.isConnected);
       setIsConnected(state.isConnected);
-
+  
       if (!state.isConnected) {
         console.log('No Internet. Showing error message.');
         Alert.alert(
@@ -64,19 +60,19 @@ const BsuPortal = () => {
             {
               text: 'განახლება',
               onPress: () => {
-                webViewRef.current.reload();
+                if (webViewRef.current) {
+                  webViewRef.current.reload(); // Check if webViewRef is not null
+                }
               },
             },
           ]
         );
       }
     });
-
-    // გასუფთავება: გამოწერის გაუქმება კომპონენტის დამონტაჟებისას
+  
     return () => {
       unsubscribe();
     };
-    
   }, []);
 
         // --- handleWebViewNavigation ფუნქცია WebView ნავიგაციისთვის --
