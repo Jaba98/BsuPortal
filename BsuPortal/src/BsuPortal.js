@@ -5,6 +5,7 @@ import SplashScreen from './SplashScreen';
 import NetInfo from '@react-native-community/netinfo';
 import { downloadFile } from './DownloadFile';
 import  openInAppBrowser  from './InappBrowser';
+import { Button } from 'react-native';
 
 
 
@@ -13,9 +14,9 @@ const BsuPortal = () => {
   const webViewRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
+  const [webViewError, setWebViewError] = useState(false);
   const [originalUrl, setOriginalUrl] = useState('https://portal.bsu.edu.ge/'); // Track the original URL
   
-
   // --- useEffect ტექნიკის დაბრუნების ღილაკის დასამუშავებლად---
   useEffect(() => {
 
@@ -25,7 +26,10 @@ const BsuPortal = () => {
         webViewRef.current.goBack();
         console.log('Hardware back button pressed. Navigating back in WebView.');
         return true;
+      }else if(!state.isConnected){
+        webViewRef.current.reload();
       }
+      
       return false;
     };
 
@@ -98,23 +102,19 @@ const BsuPortal = () => {
               <Text style={styles.internetMessageText}>Please turn on the Internet.</Text>
             </View>
           )}
-
+           {webViewError ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>მოხდა შეცდომა გთხოვთ გადატვირთოთ აპლიკაცია!</Text>
+            </View>
+          ) : (
           <WebView
              ref={webViewRef}
              // მიუთითეთ წყაროს URL WebView-ისთვის, გამოიყენეთ „newUrl“, თუ ეს შესაძლებელია, ან ნაგულისხმევი URL
              source={{ uri: originalUrl }} // Use the current URL in the WebView source
-             style={styles.webView}
-             onError={(error) => {
-              if (error.nativeEvent.description === "ERR_INTERNET_DISCONNECTED") {
-                const injectedJS = `
-                  const body = document.body;
-                  if (body) {
-                    body.innerHTML = '<div style="text-align: center; font-size: 20px;">No Internet</div>';
-                  }
-                `;
-                webViewRef.current.injectJavaScript(injectedJS);
-              }
+             onError={() => {
+              setWebViewError(true);
             }}
+             style={styles.webView}
              // ჩართეთ გადახვევა WebView-ში
              scrollEnabled={true}
              // ჩართეთ JavaScript-ის შესრულება WebView-ში
@@ -185,9 +185,10 @@ const BsuPortal = () => {
                 // Allow other requests to load
                 return true;
               }}
-               /> 
-             </>
-           )}
+              />
+              )}
+            </>
+          )}
     </SafeAreaView>
   );
 };
@@ -196,7 +197,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white', // Change to the desired background color
+  },
+  errorText: {
+    color: 'red', // Change to the desired text color
+    fontSize: 18,
+    marginLeft: 20,
+    marginRight:20, 
+    textAlign: 'center',// Adjust the font size as needed
+  },
   downloadingContainer: {
     position: 'absolute',
     top: 0,
