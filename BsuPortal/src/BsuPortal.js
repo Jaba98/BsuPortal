@@ -6,8 +6,6 @@ import NetInfo from '@react-native-community/netinfo';
 import { downloadFile } from './DownloadFile';
 import  openInAppBrowser  from './InappBrowser';
 
-
-
 const BsuPortal = () => {
   const [showSplashScreen, setShowSplashScreen] = useState(true); 
   const webViewRef = useRef(null);

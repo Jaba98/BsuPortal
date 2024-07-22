@@ -1,13 +1,62 @@
 import RNFetchBlob from 'rn-fetch-blob';
-import { Platform, ToastAndroid } from 'react-native';
+import { Platform, ToastAndroid, Alert, PermissionsAndroid } from 'react-native';
+const requestStoragePermission = async () => {
+  if (Platform.OS === 'android') {
+    try {
+      if (Platform.Version < 30) {
+        
+        // For Android versions below 11, request legacy storage permissions
+        const granted = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+        ]);
 
+        if (
+          granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED &&
+          granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED
+        ) {
+          return true;
+        }
+      } else {
+        // For Android 11 and above, you don't need to request MANAGE_EXTERNAL_STORAGE
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.warn(err);
+      return false;
+    }
+  }
+  return true;
+};
 export const downloadFile = async (url) => {
   try {
-    const { dirs } = RNFetchBlob.fs;
-    const downloadDir = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
-    // Start the download
-    ToastAndroid.show('მიმდინარეობს ფაილის გადმოწერა...', ToastAndroid.LONG);
-    const res = await RNFetchBlob.config({ fileCache: true }).fetch('GET', url);
+    const hasStoragePermission = await requestStoragePermission();
+
+    if (!hasStoragePermission) {
+      ToastAndroid.show('Storage permission not granted. File download canceled.', ToastAndroid.LONG);
+      return;
+    }
+
+    // Ask the user for confirmation
+    Alert.alert(
+      'ჩამოტვირთვის დადასტურება',
+      'გსურთ ფაილის გადმოწერა?',
+      [
+        {
+          text: 'გაუქმება',
+          style: 'გაუქმება',
+        },
+        {
+          text: 'ჩამოტვირთვა',
+          onPress: async () => {
+            // The user has confirmed the download
+            const { dirs } = RNFetchBlob.fs;
+            const downloadDir = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
+            // Start the download
+            ToastAndroid.show('ფაილის ჩამოტვირთვა მიმდინარეობს...', ToastAndroid.LONG);
+            const res = await RNFetchBlob.config({ fileCache: true }).fetch('GET', url);
+          
 
     // Check if the download was successful
     if (res.respInfo.status === 200) {
@@ -81,8 +130,13 @@ export const downloadFile = async (url) => {
       console.error('Error downloading file. Status code:', res.respInfo.status);
       ToastAndroid.show('Error downloading the file. Please try again.', ToastAndroid.LONG);
     }
-  } catch (error) {
-    console.error('Error in downloadFile:', error);
-    ToastAndroid.show('An error occurred while downloading the file.', ToastAndroid.LONG);
   }
+}
+  ],
+  { cancelable: false }
+);
+} catch (error) {
+console.error('Error in downloadFile:', error);
+ToastAndroid.show('An error occurred while downloading the file.', ToastAndroid.LONG);
+}
 };
